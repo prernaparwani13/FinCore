@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* 1. This tells Tailwind v4 to look for the .dark class on a parent (like <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    /* 2. Apply default background and text colors */
+    @apply bg-white text-slate-900 transition-colors duration-300;
+    @apply dark:bg-slate-950 dark:text-slate-50;
+  }
+}
+
+/* Hide number input arrows (Optional) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
