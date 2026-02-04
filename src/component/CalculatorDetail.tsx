@@ -642,27 +642,38 @@ const CALC_CONFIGS: Record<string, any> = {
     isV2Currency: false,
     timeUnit: 'Years',
   calculate: (
-    monthly: number,
-    rate: number,
-    timePeriod: number,
-    timeUnit: string
-  ) => {
-    const n = timeUnit === "Years" ? timePeriod * 12 : timePeriod;
-    const P = monthly;
-    const monthlyRate = rate / 100 / 12;
-    const totalValue = P * ((Math.pow(1 + monthlyRate, n) - 1) / monthlyRate) * (1 + monthlyRate);
-    const totalInvested = P * n;
-    const estReturns = totalValue - totalInvested;
-    return {
-      totalValue: Math.round(totalValue),
-      totalInvested: Math.round(totalInvested),
-      estReturns: Math.round(estReturns),
-      timePeriod,
-      timeUnit,
-      returnPercentage: totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0,
-      ratio: totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0
-    };
-  },
+  monthly: number,
+  rate: number,
+  timePeriod: number,
+  timeUnit: string
+) => {
+  const months =
+    timeUnit === "Years" ? timePeriod * 12 : timePeriod;
+
+  const P = Number(monthly);
+  const r = Number(rate) / 100;
+  const n = 4; // quarterly compounding
+
+  let maturity = 0;
+
+  for (let m = 0; m < months; m++) {
+    const exponent = (n * (months - m)) / 12;
+    maturity += P * Math.pow(1 + r / n, exponent);
+  }
+
+  const totalInvested = P * months;
+  const estReturns = maturity - totalInvested;
+
+  return {
+    totalValue: Math.floor(maturity),
+    totalInvested,
+    estReturns: Math.floor(estReturns),
+    returnPercentage:
+      totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0,
+    ratio:
+      totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0
+  };
+},
     totalValueLabel: "Total Value",
     gainLabel: "RETURN %",
     investedLabel: "Invested Amount",
@@ -1141,7 +1152,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     results = config.calculate(val1, val2);
   }
 
-  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityAmount: maturityValue = 0 } = results;
+  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0 } = results;
 
   const formatCurrency = (amount: number) => {
     const convertedAmount = isINR ? amount * 83 : amount;
@@ -1196,7 +1207,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         </div>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 mb-12 -py-1">
           
           {/* Inputs Section */}
           <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 md:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -1204,7 +1215,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <Info size={14} className="inline mr-2" /> Adjust sliders or type values
             </div>
 
-            <div className="space-y-6 sm:space-y-6">
+            <div className="space-y-1 sm:space-y-1">
               {/* First Input */}
               <div>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 -mt-1">
@@ -1227,19 +1238,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     />
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={config.min1}
-                  max={config.max1}
-                  step={config.step1}
-                  value={v1}
-                  onChange={(e) => setV1(e.target.value)}
-                  className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                />
-                <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                  <span>{config.min1.toLocaleString()}</span>
-                  <span>{config.max1.toLocaleString()}</span>
-                </div>
+                {config.min1 !== config.max1 && (
+                  <>
+                    <input
+                      type="range"
+                      min={config.min1}
+                      max={config.max1}
+                      step={config.step1}
+                      value={v1}
+                      onChange={(e) => setV1(e.target.value)}
+                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+                    />
+                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                      <span>{config.min1.toLocaleString()}</span>
+                      <span>{config.max1.toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Second Input */}
@@ -1262,22 +1277,26 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       }}
                       className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                     />
-                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : "%"}</span>}
+                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : "%"}</span>}
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={config.min2}
-                  max={config.max2}
-                  step={config.step2}
-                  value={v2}
-                  onChange={(e) => setV2(e.target.value)}
-                  className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
-                />
-                <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                  <span>{config.min2.toLocaleString()}{!config.isV2Currency && '%'}</span>
-                  <span>{config.max2.toLocaleString()}{!config.isV2Currency && '%'}</span>
-                </div>
+                {config.min2 !== config.max2 && (
+                  <>
+                    <input
+                      type="range"
+                      min={config.min2}
+                      max={config.max2}
+                      step={config.step2}
+                      value={v2}
+                      onChange={(e) => setV2(e.target.value)}
+                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                    />
+                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : "%")}</span>
+                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : "%")}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* GST Mode Radio Buttons */}
@@ -1346,19 +1365,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       </div>
                     </div>
                   </div>
-                  <input
-                    type="range"
-                    min={config.min3}
-                    max={config.max3}
-                    step={config.step3}
-                    value={v3}
-                    onChange={(e) => setV3(e.target.value)}
-                    className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-indigo-600"
-                  />
-                  <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                    <span>{config.min3}</span>
-                    <span>{config.max3}</span>
-                  </div>
+                  {config.min3 !== config.max3 && (
+                    <>
+                      <input
+                        type="range"
+                        min={config.min3}
+                        max={config.max3}
+                        step={config.step3}
+                        value={v3}
+                        onChange={(e) => setV3(e.target.value)}
+                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                      />
+                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                        <span>{config.min3}</span>
+                        <span>{config.max3}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -1415,11 +1438,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
              
 
               {/* Donut Chart */}
-              <div className="relative w-36 h-36 sm:w-48 sm:h-48 mb-4">
+              <div className="relative w-50 h-36 sm:w-50 sm:h-48 mb-4">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
-                  <circle cx="96" cy="96" r="76" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="16" />
+                  <circle cx="96" cy="96" r="76" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="36" />
                   <circle
-                    cx="96" cy="96" r="76" fill="transparent" stroke="#3b82f6" strokeWidth="16"
+                    cx="96" cy="96" r="76" fill="transparent" stroke="#3b82f6" strokeWidth="36"
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
@@ -1526,6 +1549,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         <span className="text-xs font-bold text-slate-500">Maturity Year</span>
                       </div>
                       <span className="text-sm font-black text-green-600">{results.maturityYear}</span>
+                    </div>
+                  </>
+                ) : calc?.title === "Gratuity Calculator" ? (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
+                      </div>
+                      <span className="text-sm font-black">{formatCurrency(totalInvested)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.profitLabel}</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{years} YRS</span>
                     </div>
                   </>
                 ) : (
