@@ -98,13 +98,13 @@ const CALC_CONFIGS: Record<string, any> = {
 
       return {
         // Main display: Monthly Payment (Rounded for clean UI)
-        totalValue: (monthlyPayment),
+        totalValue: Math.round(monthlyPayment),
         years: years,
         // Shows the annual rate (e.g., 6.5) so the label matches the slider
         returnPercentage: annualRate,
         totalInvested: Math.round(P),
-        estReturns: (totalInterest),
-        finalAmount: totalRepayment,
+        estReturns: Math.round(totalInterest),
+        finalAmount: Math.round(totalRepayment),
         // Ratio used for the blue progress ring (Interest vs Total Cost)
         ratio: (totalInterest / totalRepayment) * 100
       };
@@ -311,14 +311,22 @@ const CALC_CONFIGS: Record<string, any> = {
     label2: "GST Rate", min2: 5, max2: 30, step2: 1, def2: 5,
     hasThirdSlider: false,
     isV2Currency: false,
-   calculate: (price: number, rate: number) => {
-  const gstAmount = price * (rate / 100);
-  const totalPrice = price + gstAmount;
+   calculate: (price: number, rate: number, mode: 'exclusive' | 'inclusive' = 'exclusive') => {
+  let gstAmount, totalPrice, originalPrice;
+  if (mode === 'exclusive') {
+    gstAmount = price * (rate / 100);
+    totalPrice = price + gstAmount;
+    originalPrice = price;
+  } else {
+    totalPrice = price;
+    originalPrice = price / (1 + rate / 100);
+    gstAmount = totalPrice - originalPrice;
+  }
 
   return {
-    totalValue: totalPrice,  
-    totalInvested: price,     
-    estReturns: gstAmount,    
+    totalValue: mode === 'exclusive' ? totalPrice : originalPrice,
+    totalInvested: originalPrice,
+    estReturns: gstAmount,
     returnPercentage: rate,
     years: 1,
     ratio: rate
@@ -400,13 +408,13 @@ const CALC_CONFIGS: Record<string, any> = {
   const interest = totalPayment - loanAmount;
 
   return {
-  totalValue: monthlyPayment,
+  totalValue: Math.round(monthlyPayment),
   years: termYears,
-  returnPercentage: (interest / loanAmount) * 100,
+  returnPercentage: +((interest / loanAmount) * 100).toFixed(2),
   totalInvested: loanAmount,
-  estReturns: interest,
-  finalAmount: totalPayment,
-  ratio: (interest / totalPayment) * 100
+  estReturns: Math.round(interest),
+  finalAmount: Math.round(totalPayment),
+  ratio: +((interest / totalPayment) * 100).toFixed(2)
 };
 
 },
@@ -436,28 +444,28 @@ const CALC_CONFIGS: Record<string, any> = {
     hasThirdSlider: true,
     isV2Currency: false,
     calculate: (principal: number, rate: number, years: number) => {
-  const P = Number(principal);
-  const r = Number(rate) / 100;
-  const t = Number(years);
-  const n = 4; // Quarterly compounding (standard FD)
+      const P = Number(principal);
+      const r = Number(rate) / 100;
+      const t = Number(years);
+      const n = 4; // Quarterly compounding (standard FD)
 
-  const totalValue = P * Math.pow(1 + r / n, n * t);
-  const estReturns = totalValue - P;
+      const totalValue = P * Math.pow(1 + r / n, n * t);
+      const estReturns = totalValue - P;
 
-  return {
-    totalValue: Math.round(totalValue),
-    years: t,
-    returnPercentage: +((estReturns / P) * 100).toFixed(2),
-    totalInvested: P,
-    estReturns: Math.round(estReturns),
-    ratio: +((estReturns / P) * 100).toFixed(2)
-  };
+      return {
+        totalValue: Math.round(totalValue),
+        years: t,
+        returnPercentage: +((estReturns / P) * 100).toFixed(2),
+        totalInvested: P,
+        estReturns: Math.round(estReturns),
+        ratio: +((estReturns / P) * 100).toFixed(2)
+      };
 },
- 
+
     totalValueLabel: "TOTAL VALUE",
     gainLabel: "RETURN %",
-    investedLabel: "Total Investment",
-    profitLabel: "Est Returns",
+    investedLabel: "Est Returns",
+    profitLabel: "Total Investment",
     formulaText: "This investment calculator uses the simple interest formula:",
     formulaLatex: "SI = P Ã— R Ã— T / 100, Total Value = P + SI",
     formulaVars: "SI = Simple Interest, P = Principal, R = Rate of Interest (%), T = Time Period (Years)",
@@ -499,8 +507,8 @@ const CALC_CONFIGS: Record<string, any> = {
     },
     totalValueLabel: "TOTAL VALUE",
     gainLabel: "RETURN %",
-    investedLabel: "Invested Amount",
-    profitLabel: "Est. Returns",
+    investedLabel: "Est. Returns",
+    profitLabel: "Total Investment",
     formulaText: "This mutual funds calculator uses the compound interest formula:",
     formulaLatex: "FV = P Ã— (1 + r)^t",
     formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate, t = Time Period (Years)",
@@ -542,8 +550,8 @@ const CALC_CONFIGS: Record<string, any> = {
     },
     totalValueLabel: "COST INCREASE",
     gainLabel: "",
-    investedLabel: "Current Cost",
-    profitLabel: "Future Cost",
+    investedLabel: "Future Cost",
+    profitLabel: "Current Cost",
     formulaText: "This inflation calculator uses the compound inflation formula:",
     formulaLatex: "FC = CC Ã— (1 + r)^t, CI = FC - CC",
     formulaVars: "FC = Future Cost, CC = Current Cost, r = Annual Inflation Rate, t = Time Period (Years), CI = Cost Increase",
@@ -567,32 +575,48 @@ const CALC_CONFIGS: Record<string, any> = {
     hasThirdSlider: true,
     isV2Currency: false,
     calculate: (monthly: number, rate: number, age: number) => {
-      const years = 60 - age;
-      const monthlyRate = rate / 100 / 12;
-      const numMonths = years * 12;
-      const totalInvested = monthly * numMonths;
-      const maturityAmount = Math.round(
-        monthly * ((Math.pow(1 + monthlyRate, numMonths) - 1) / monthlyRate)
-      );
-      const interestEarned = maturityAmount - totalInvested;
-      const minAnnuityInvestment = Math.round(0.4 * maturityAmount);
-      return {
-        totalValue: totalInvested,
-        years,
-        returnPercentage: (interestEarned / totalInvested) * 100,
-        totalInvested,
-        estReturns: interestEarned,
-        maturityAmount,
-        minAnnuityInvestment,
-        ratio: (interestEarned / totalInvested) * 100
-      };
-    },
+  const years = 60 - age;
+  const numMonths = years * 12;
+
+  const monthlyInvestment = Number(monthly);
+  const annualRate = Number(rate);
+
+  const totalInvested = monthlyInvestment * numMonths;
+
+  // 🛑 Handle zero or invalid rate
+  let maturityAmount = totalInvested;
+
+  if (annualRate > 0 && numMonths > 0) {
+    const monthlyRate = annualRate / 100 / 12;
+    maturityAmount = Math.round(
+      monthlyInvestment *
+        ((Math.pow(1 + monthlyRate, numMonths) - 1) / monthlyRate)
+    );
+  }
+
+  const interestEarned = maturityAmount - totalInvested;
+  const minAnnuityInvestment = Math.round(0.4 * maturityAmount);
+
+  return {
+    totalValue: maturityAmount, // ✅ FIXED
+    years,
+    returnPercentage:
+      totalInvested > 0 ? (interestEarned / totalInvested) * 100 : 0,
+    totalInvested,
+    estReturns: interestEarned,
+    maturityAmount,
+    minAnnuityInvestment,
+    ratio:
+      totalInvested > 0 ? (interestEarned / totalInvested) * 100 : 0
+  };
+},
+
     totalValueLabel: "TOTAL INVESTMENT",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
     profitLabel: "Interest Earned",
     formulaText: "This NPS calculator uses the future value of an annuity formula:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r] Ã— (1 + r)",
+    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r]",
     formulaVars: "FV = Future value, P = Monthly investment, r = Monthly interest rate, n = Number of months",
     useCases: [
       "Planning retirement savings through NPS.",
@@ -612,7 +636,7 @@ const CALC_CONFIGS: Record<string, any> = {
   "RD Calculator": {
     label1: "Monthly Investment", min1: 100, max1: 100000, step1: 100, def1: 100,
     label2: "Rate of Interest (p.a.)", min2: 1, max2: 20, step2: 0.1, def2: 1,
-    label3: "Time Period", min3: 0, max3: 120, step3: 1, def3: 0,
+    label3: "Time Period", min3: 1, max3: 120, step3: 1, def3: 1,
     hasThirdSlider: true,
     hasFourthSlider: false,
     isV2Currency: false,
@@ -624,32 +648,22 @@ const CALC_CONFIGS: Record<string, any> = {
     timeUnit: string
   ) => {
     const n = timeUnit === "Years" ? timePeriod * 12 : timePeriod;
-    const r = rate / 400; 
-
-    let maturityValue = 0;
-    if (rate > 0 && n > 0) {
-      const totalQuarters = n / 3;
-      const numerator = Math.pow(1 + r, totalQuarters) - 1;
-      const denominator = 1 - Math.pow(1 + r, -1/3);
-      
-      maturityValue = monthly * (numerator / denominator);
-    } else {
-      maturityValue = monthly * n;
-    }
-    const totalInvested = monthly * n;
-    const finalMaturity = Math.floor(maturityValue);
-    const estReturns = finalMaturity - totalInvested;
+    const P = monthly;
+    const monthlyRate = rate / 100 / 12;
+    const totalValue = P * ((Math.pow(1 + monthlyRate, n) - 1) / monthlyRate) * (1 + monthlyRate);
+    const totalInvested = P * n;
+    const estReturns = totalValue - totalInvested;
     return {
-      totalValue: finalMaturity,
-      totalInvested,
-      estReturns,
+      totalValue: Math.round(totalValue),
+      totalInvested: Math.round(totalInvested),
+      estReturns: Math.round(estReturns),
       timePeriod,
       timeUnit,
-      returnPercentage: (estReturns / totalInvested) * 100,
-      ratio: (estReturns / totalInvested) * 100
+      returnPercentage: totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0,
+      ratio: totalInvested > 0 ? (estReturns / totalInvested) * 100 : 0
     };
   },
-    totalValueLabel: "Invested Amount",
+    totalValueLabel: "Total Value",
     gainLabel: "RETURN %",
     investedLabel: "Invested Amount",
     profitLabel: "Est. Returns",
@@ -687,19 +701,19 @@ const CALC_CONFIGS: Record<string, any> = {
   let totalInvested = 0;
 
   for (let year = 1; year <= maturityYears; year++) {
-    balance *= (1 + rate);
-
     if (year <= depositYears) {
       balance += yearly;
       totalInvested += yearly;
     }
+
+    balance *= (1 + rate);
   }
 
   const maturityValue = Math.round(balance);
   const totalInterest = maturityValue - totalInvested;
 
   return {
-    totalValue: totalInvested,
+    totalValue: maturityValue,
     totalInvested,
     estReturns: totalInterest,
     maturityValue,
@@ -708,7 +722,7 @@ const CALC_CONFIGS: Record<string, any> = {
     ratio: (depositYears / 15) * 100  // Use deposit years as ratio for dynamic chart
   };
 },
-    totalValueLabel: "TOTAL INVESTMENT",
+    totalValueLabel: "MATURITY VALUE",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
     profitLabel: "Total Interest",
@@ -1102,6 +1116,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const [v4, setV4] = useState<string>(String(config.def4 || config.min4 || 0));
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
+  const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
 
   // Calculation
   const val1 = Number(v1) || (config.def1 || config.min1);
@@ -1118,13 +1133,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     } else {
       results = config.calculate(val1, val2, val3);
     }
+  } else if (calc?.title === "GST Calculator") {
+    results = config.calculate(val1, val2, gstMode);
   } else if (config.isV2Currency) {
     results = config.calculate(val1, val2);
   } else {
     results = config.calculate(val1, val2);
   }
 
-  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0 } = results;
+  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityAmount: maturityValue = 0 } = results;
 
   const formatCurrency = (amount: number) => {
     const convertedAmount = isINR ? amount * 83 : amount;
@@ -1135,7 +1152,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const circumference = 2 * Math.PI * 76;
   const offset = circumference - (Math.abs(ratio) / 100) * circumference;
 
-  const dynamicConfig = config;
+  const dynamicConfig = {
+    ...config,
+    ...(calc?.title === "GST Calculator" ? {
+      totalValueLabel: gstMode === 'exclusive' ? "TOTAL PRICE(Including GST)" : "ORIGINAL PRICE(Excluding GST)",
+      investedLabel: "Price Excluding GST",
+      profitLabel: "GST Amount",
+      formulaText: gstMode === 'exclusive'
+        ? "This GST calculator calculates the Goods and Services Tax:"
+        : "This GST calculator calculates the Goods and Services Tax for inclusive pricing:",
+      formulaLatex: gstMode === 'exclusive'
+        ? "GST Amount = Price Ã— (GST Rate / 100), Total Price = Price + GST Amount"
+        : "Original Price = Total Price / (1 + GST Rate / 100), GST Amount = Total Price - Original Price",
+      formulaVars: gstMode === 'exclusive'
+        ? "GST Amount = Tax amount, Price = Original price, GST Rate = Tax percentage, Total Price = Price including GST"
+        : "Original Price = Price before GST, Total Price = Price including GST, GST Amount = Tax amount, GST Rate = Tax percentage"
+    } : {})
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 pb-20 font-sans text-slate-900 dark:text-white">
@@ -1166,18 +1199,18 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 mb-12">
           
           {/* Inputs Section */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div className="text-slate-400 text-[10px] mb-8 font-bold uppercase tracking-widest text-left">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 md:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="text-slate-400 text-[10px] mb-4 font-bold uppercase tracking-widest text-left">
               <Info size={14} className="inline mr-2" /> Adjust sliders or type values
             </div>
 
-            <div className="space-y-10 sm:space-y-12">
+            <div className="space-y-6 sm:space-y-6">
               {/* First Input */}
               <div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 -mt-1">
                   <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
                   <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                    {!config.isV2Currency && calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="mr-1">$</span>}
+                    {!config.isV2Currency && <span className="mr-1">$</span>}
                     <input
                       type="number"
                       min={config.min1}
@@ -1211,7 +1244,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
               {/* Second Input */}
               <div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                   <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label2}</label>
                   <div className="flex items-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-lg font-black text-sm border border-emerald-100 dark:border-emerald-800/50">
                     {config.isV2Currency && <span className="mr-1">$</span>}
@@ -1229,7 +1262,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       }}
                       className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                     />
-                    {!config.isV2Currency && <span className="ml-1">%</span>}
+                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : "%"}</span>}
                   </div>
                 </div>
                 <input
@@ -1247,10 +1280,41 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 </div>
               </div>
 
+              {/* GST Mode Radio Buttons */}
+              {calc?.title === "GST Calculator" && (
+                <div className="mt-4">
+                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 block">GST Mode</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gstMode"
+                        value="exclusive"
+                        checked={gstMode === 'exclusive'}
+                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Exclusive</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gstMode"
+                        value="inclusive"
+                        checked={gstMode === 'inclusive'}
+                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Inclusive</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {/* Third Input */}
               {config.hasThirdSlider && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label3}</label>
                     <div className="flex items-center gap-2">
                       {calc?.title === "RD Calculator" && (
@@ -1301,7 +1365,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               {/* Fourth Input (for SWP) */}
               {config.hasFourthSlider && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label4}</label>
                     <div className="flex items-center bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg font-black text-sm border border-purple-100 dark:border-purple-800/50">
                       <input
@@ -1341,16 +1405,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
           {/* Results Sidebar */}
           <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center shadow-sm">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">
-                {dynamicConfig.totalValueLabel}
+            <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center shadow-sm">
+              <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${calc?.title === "ROI Calculator" && totalValue < 0 ? 'text-red-500' : 'text-slate-400'} mb-1`}>
+                {calc?.title === "ROI Calculator" ? (totalValue < 0 ? "LOSS" : "PROFIT") : dynamicConfig.totalValueLabel}
               </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 break-all">
-                {formatCurrency(totalValue)}
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-1 break-all">
+                {calc?.title === "ROI Calculator" && totalValue < 0 ? formatCurrency(Math.abs(totalValue)) : formatCurrency(totalValue)}
               </h2>
-              <p className="text-emerald-500 font-bold text-xs mb-4 italic">
-                Projection for {years} years
-              </p>
+             
 
               {/* Donut Chart */}
               <div className="relative w-36 h-36 sm:w-48 sm:h-48 mb-4">
@@ -1373,11 +1435,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               </div>
 
               {/* Currency Toggle */}
-              <div className="w-full space-y-3">
+              <div className="w-full space-y-1">
                 <div className="flex justify-end">
                   <button
                     onClick={() => setIsINR(!isINR)}
-                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-12"
                   >
                     {isINR ? 'USD ($)' : 'INR (₹)'}
                   </button>
@@ -1425,6 +1487,47 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black text-blue-600">{formatCurrency(maturityValue)}</span>
                     </div>
                   </>
+                ) : calc?.title === "ROI Calculator" ? (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">Final Amount</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(finalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span className="text-xs font-bold text-slate-500">Amount Invested</span>
+                      </div>
+                      <span className="text-sm font-black">{formatCurrency(totalInvested)}</span>
+                    </div>
+                  </>
+                ) : calc?.title === "SSY Calculator" ? (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span className="text-xs font-bold text-slate-500">Total Investment</span>
+                      </div>
+                      <span className="text-sm font-black">{formatCurrency(totalInvested)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">Total Interest</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(estReturns)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-xs font-bold text-slate-500">Maturity Year</span>
+                      </div>
+                      <span className="text-sm font-black text-green-600">{results.maturityYear}</span>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
@@ -1434,9 +1537,12 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       </div>
                       <span className="text-sm font-black">
                         {calc?.title === "Post Office MIS Calculator" ? `${returnPercentage}%` : formatCurrency(
+
+                          calc?.title === "Simple Interest" ? totalInvested :
                           calc?.title === "SIP Calculator" || calc?.title === "Lumpsum Calculator" ? estReturns :
-                          calc?.title === "ROI Calculator" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
+                          calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
                           calc?.title === "SWP Calculator" ? results.finalValue :
+                          calc?.title === "Inflation Calculator" ? estReturns :
                           estReturns
                         )}
                       </span>
@@ -1448,9 +1554,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       </div>
                       <span className="text-sm font-black text-blue-600">
                         {formatCurrency(
-                          calc?.title === "SIP Calculator" || calc?.title === "Compound Interest" || calc?.title === "FD Calculator" || calc?.title === "Mutual Funds Returns" || calc?.title === "RD Calculator" ? totalValue :
+                          calc?.title === "Mutual Funds Returns" ? totalInvested :
+                          calc?.title === "SIP Calculator" || calc?.title === "Compound Interest" || calc?.title === "RD Calculator" ? totalValue :
+                          calc?.title === "FD Calculator" ? totalInvested :
                           calc?.title === "Lumpsum Calculator" ? totalInvested :
-                          calc?.title === "Inflation Calculator" ? estReturns :
+                          calc?.title === "Inflation Calculator" ? totalInvested :
                           estReturns
                         )}
                       </span>
