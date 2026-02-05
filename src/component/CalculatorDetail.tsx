@@ -612,7 +612,7 @@ const CALC_CONFIGS: Record<string, any> = {
   };
 },
 
-    totalValueLabel: "TOTAL INVESTMENT",
+    totalValueLabel: "MATURITY AMOUNT",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
     profitLabel: "Interest Earned",
@@ -1848,9 +1848,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span className="text-xs font-bold text-slate-500">Maturity Amount</span>
+                        <span className="text-xs font-bold text-slate-500">Total Investment</span>
                       </div>
-                      <span className="text-sm font-black text-blue-600">{formatCurrency(maturityValue)}</span>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(totalInvested)}</span>
                     </div>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
