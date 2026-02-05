@@ -30,4 +30,6 @@ export const calculatorData: CalculatorItem[] = [
   { title: "Gratuity Calculator", description: "Calculate gratuity amount based on monthly salary and years of service.", category: "RETIREMENT", icon: "💰", color: "purple" },
   { title: "EPF Calculator", description: "Calculate your EPF maturity amount based on salary, age, contribution, and salary growth.", category: "RETIREMENT", icon: "🏦", color: "purple" },
   { title: "NSC Calculator", description: "Calculate National Savings Certificate maturity value, total investment, and interest earned.", category: "INVESTMENT", icon: "🏛️", color: "green" },
+  { title: "Stock Average Calculator", description: "Calculate average stock price, total amount invested, and total shares across multiple purchases.", category: "INVESTMENT", icon: "📈", color: "green" },
+  { title: "HRA Calculator", description: "Calculate taxable and exempted HRA based on salary, allowances, and rent paid.", category: "TAX", icon: "🏠", color: "orange" },
 ];

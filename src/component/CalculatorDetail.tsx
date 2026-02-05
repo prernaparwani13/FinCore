@@ -4,6 +4,7 @@ import {
   ArrowLeft, Info, BookOpen,
   FileText, Zap, CircleCheck
 } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 
 interface Props {
   calc?: any;
@@ -1159,83 +1160,114 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Interest", desc: "The total interest earned over 5 years." }
     ]
   },
-  "Income Tax Calculator": {
-    calculate: (grossSalary: number, otherSources: number, interestIncome: number, rentalIncome: number, homeLoanInterestSelf: number, homeLoanInterestLetOut: number, deduction80C: number, deduction80CCD1B: number, deduction80D: number, deduction80G: number, deduction80E: number, deduction80TTA: number, basicSalary: number, da: number, hraReceived: number, rentPaid: number, isMetro: number, ageCategory: number) => {
-      // Calculate total income
-      const totalIncome = grossSalary + otherSources + interestIncome + rentalIncome;
-
-      // Calculate deductions
-      const totalDeductions = deduction80C + deduction80CCD1B + deduction80D + deduction80G + deduction80E + deduction80TTA;
-
-      // Calculate HRA exemption
-      const hraExemption = Math.min(hraReceived, rentPaid - (basicSalary + da) * 0.1, (basicSalary + da) * (isMetro ? 0.5 : 0.4));
-
-      // Calculate taxable income (after standard deduction of â‚¹50,000)
-      const taxableIncome = Math.max(0, totalIncome - totalDeductions - hraExemption - 50000);
-
-      // Helper function to calculate tax
-      const calculateTax = (income: number, slabs: number[][]) => {
-        let tax = 0;
-        for (const [limit, rate] of slabs) {
-          if (income > limit) {
-            tax += (income - limit) * rate;
-            break;
-          }
-        }
-        return tax;
-      };
-
-      // New regime slabs (2023 onwards)
-      const newRegimeSlabs = [
-        [300000, 0],
-        [700000, 0.05],
-        [1000000, 0.1],
-        [1200000, 0.15],
-        [1500000, 0.2],
-        [Infinity, 0.3]
-      ];
-
-      // Old regime slabs
-      const oldRegimeSlabs = [
-        [250000, 0],
-        [500000, 0.05],
-        [1000000, 0.2],
-        [Infinity, 0.3]
-      ];
-
-      const newRegimeTax = calculateTax(taxableIncome, newRegimeSlabs) + calculateTax(taxableIncome, newRegimeSlabs) * 0.04; // 4% cess
-      const oldRegimeTax = calculateTax(taxableIncome, oldRegimeSlabs) + calculateTax(taxableIncome, oldRegimeSlabs) * 0.04; // 4% cess
-
+  "Stock Average Calculator": {
+    // Custom calculator with multiple share blocks
+    calculate: (shares: {buyPrice: string, quantity: string}[]) => {
+      const totalAmount = shares.reduce((sum, share) => {
+        const buyPrice = parseFloat(share.buyPrice) || 0;
+        const quantity = parseFloat(share.quantity) || 0;
+        return sum + (buyPrice * quantity);
+      }, 0);
+      const totalShares = shares.reduce((sum, share) => {
+        const quantity = parseFloat(share.quantity) || 0;
+        return sum + quantity;
+      }, 0);
+      const averagePrice = totalShares > 0 ? totalAmount / totalShares : 0;
       return {
-        totalValue: Math.round(newRegimeTax),
-        totalInvested: Math.round(oldRegimeTax),
-        estReturns: Math.round(taxableIncome),
-        returnPercentage: 0,
-        years: 0,
+        totalValue: Math.round(totalAmount),
+        averagePrice: Math.round(averagePrice * 100) / 100,
+        totalShares: Math.round(totalShares),
+        returnPercentage: 0, // Not applicable
         ratio: 0
       };
     },
-    totalValueLabel: "TOTAL TAX (NEW REGIME)",
+    totalValueLabel: "TOTAL AMOUNT",
     gainLabel: "",
-    investedLabel: "Total Tax (Old Regime)",
-    profitLabel: "Taxable Income",
-    formulaText: "This calculator computes income tax under new and old regimes based on Indian tax laws.",
-    formulaLatex: "",
-    formulaVars: "",
+    investedLabel: "Average Price",
+    profitLabel: "Total Shares",
+    formulaText: "This stock average calculator computes the weighted average price based on multiple purchases:",
+    formulaLatex: "Average Price = Total Amount / Total Shares",
+    formulaVars: "Total Amount = Sum of (Buy Price × Quantity) for all shares, Total Shares = Sum of Quantities",
     useCases: [
-      "Calculate tax liability for salaried individuals.",
-      "Compare tax under new and old regimes.",
-      "Plan deductions and exemptions."
+      "Calculating average cost of stock purchases over time.",
+      "Determining the break-even price for investments.",
+      "Tracking portfolio performance with multiple buy-ins."
     ],
     definitions: [
-      { title: "New Tax Regime", desc: "Simplified tax slabs with lower rates but fewer deductions." },
-      { title: "Old Tax Regime", desc: "Traditional tax slabs with more deductions available." },
-      { title: "Taxable Income", desc: "Income after deductions and exemptions." }
+      { title: "Buy Price", desc: "The price per share at the time of purchase." },
+      { title: "Quantity", desc: "The number of shares purchased at that price." },
+      { title: "Total Amount", desc: "The total money invested across all purchases." },
+      { title: "Average Price", desc: "The weighted average price per share." },
+      { title: "Total Shares", desc: "The total number of shares owned." }
+    ]
+  },
+  "HRA Calculator": {
+    label1: "Basic salary(p.a.)", min1: 100000, max1: 10000000, step1: 10000, def1: 500000,
+    label2: "Dearness allowance(p.a.)", min2: 0, max2: 1000000, step2: 10000, def2: 0,
+    label3: "HRA received(p.a.)", min3: 0, max3: 1000000, step3: 10000, def3: 100000,
+    label4: "Total rent(p.a.)", min4: 0, max4: 2000000, step4: 10000, def4: 120000,
+    hasThirdSlider: true,
+    hasFourthSlider: true,
+    isV2Currency: false,
+  calculate: (
+  basicSalary: number,
+  da: number,
+  hraReceived: number,
+  rentPaid: number,
+  isMetro: boolean
+) => {
+  const salaryForHRA = basicSalary + da;
+
+  const hraLimit = isMetro
+    ? 0.5 * salaryForHRA
+    : 0.4 * salaryForHRA;
+
+  const rentMinusTenPercent =
+    rentPaid > 0
+      ? Math.max(0, rentPaid - 0.1 * salaryForHRA)
+      : 0;
+
+  const exemptedHRA = Math.min(
+    hraReceived,
+    hraLimit,
+    rentMinusTenPercent
+  );
+
+  const taxableHRA = Math.max(0, hraReceived - exemptedHRA);
+
+  return {
+    totalValue: Math.round(exemptedHRA),   // Exempted HRA
+    totalInvested: Math.round(taxableHRA), // Taxable HRA
+    estReturns: Math.round(salaryForHRA),  // Basic + DA
+    returnPercentage: 0,
+    ratio: 0
+  };
+},
+    totalValueLabel: "Taxable HRA",
+    gainLabel: "",
+    investedLabel: "Exempted HRA",
+    profitLabel: "Basic + DA",
+    formulaText: "This HRA calculator computes taxable and exempted House Rent Allowance based on salary, allowances, and rent paid:",
+    formulaLatex: "Exempted HRA = min(HRA Received, Rent Paid - 10% Basic, 50% Basic (Metro) / 40% Basic (Non-Metro))",
+    formulaVars: "Taxable HRA = HRA Received - Exempted HRA, Basic Salary = Basic + DA",
+    useCases: [
+      "Calculating tax-exempt HRA for salaried employees.",
+      "Understanding HRA exemption limits based on city type.",
+      "Planning rent payments to maximize tax benefits."
+    ],
+    definitions: [
+      { title: "Basic salary(p.a.)", desc: "Annual basic salary component." },
+      { title: "Dearness allowance(p.a.)", desc: "Annual dearness allowance component." },
+      { title: "HRA received(p.a.)", desc: "Annual House Rent Allowance received from employer." },
+      { title: "Total rent(p.a.)", desc: "Annual rent paid for accommodation." },
+      { title: "Taxable HRA", desc: "Portion of HRA that is taxable." },
+      { title: "Exempted HRA", desc: "Portion of HRA that is tax-exempt." }
     ]
   },
 };
 
 const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) => {
+  const { theme } = useTheme();
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
 
@@ -1246,8 +1278,33 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
+  const [isMetro, setIsMetro] = useState(true); // default to metro for HRA
   const [frequency, setFrequency] = useState(2); // default half-yearly
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Income Tax Calculator specific state
+  const [assessmentYear, setAssessmentYear] = useState('2025-2026');
+  const [ageCategory, setAgeCategory] = useState('Below 60');
+  const [deductions, setDeductions] = useState({
+    deduction80C: 0,
+    deduction80CCD1B: 0,
+    deduction80D: 0,
+    deduction80G: 0,
+    deduction80E: 0,
+    deduction80TTA: 0
+  });
+  const [hra, setHra] = useState({
+    basicSalary: 0,
+    da: 0,
+    hraReceived: 0,
+    rentPaid: 0
+  });
+
+  // Stock Average Calculator specific state
+  const [shares, setShares] = useState<{buyPrice: string, quantity: string}[]>([
+    { buyPrice: '0', quantity: '0' },
+    { buyPrice: '0', quantity: '0' }
+  ]);
 
   // Calculation
   const val1 = Number(v1) || (config.def1 || config.min1);
@@ -1255,8 +1312,27 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const val3 = Number(v3) || (config.def3 || config.min3 || 0);
   const val4 = Number(v4) || (config.def4 || config.min4 || 0);
 
+  // Calculate percentages for dynamic slider fills
+  const percentage1 = config.min1 !== config.max1 ? ((val1 - config.min1) / (config.max1 - config.min1)) * 100 : 0;
+  const percentage2 = config.min2 !== config.max2 ? ((val2 - config.min2) / (config.max2 - config.min2)) * 100 : 0;
+  const percentage3 = config.min3 !== config.max3 ? ((val3 - config.min3) / (config.max3 - config.min3)) * 100 : 0;
+  const percentage4 = config.min4 !== config.max4 ? ((val4 - config.min4) / (config.max4 - config.min4)) * 100 : 0;
+
+  // Dynamic slider styles based on theme and slider index
+  const getSliderStyle = (percentage: number, sliderIndex: number = 0) => {
+    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']; // blue, green, purple, amber
+    const fillColor = colors[sliderIndex] || '#3b82f6';
+    return {
+      background: `linear-gradient(to right, ${fillColor} 0%, ${fillColor} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} 100%)`
+    };
+  };
+
   let results: any = {};
-  if (config.hasFourthSlider) {
+  if (calc?.title === "Stock Average Calculator") {
+    results = config.calculate(shares);
+  } else if (calc?.title === "HRA Calculator") {
+    results = config.calculate(val1, val2, val3, val4, isMetro);
+  } else if (config.hasFourthSlider) {
     results = config.calculate(val1, val2, val3, val4);
   } else if (config.hasThirdSlider) {
     if (calc?.title === "RD Calculator") {
@@ -1272,7 +1348,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     results = config.calculate(val1, val2);
   }
 
-  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0 } = results;
+  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0, averagePrice = 0, totalShares = 0 } = results;
 
   // Trigger animation when ratio changes
   useEffect(() => {
@@ -1343,53 +1419,124 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             </div>
 
             <div className="space-y-1 sm:space-y-1">
-              {/* First Input */}
-              <div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 -mt-1">
-                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
-                  <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                    {!config.isV2Currency && <span className="mr-1">$</span>}
-                    <input
-                      type="number"
-                      min={config.min1}
-                      max={config.max1}
-                      value={v1}
-                      onChange={(e) => setV1(e.target.value)}
-                      onBlur={(e) => {
-                        const val = Number(e.target.value);
-                        if (val < config.min1) setV1(String(config.min1));
-                        else if (val > config.max1) setV1(String(config.max1));
-                        else setV1(e.target.value);
-                      }}
-                      className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
-                    />
-                  </div>
-                </div>
-                {config.min1 !== config.max1 && (
-                  <>
-                    <input
-                      type="range"
-                      min={config.min1}
-                      max={config.max1}
-                      step={config.step1}
-                      value={v1}
-                      onChange={(e) => setV1(e.target.value)}
-                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                    />
-                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                      <span>{config.min1.toLocaleString()}</span>
-                      <span>{config.max1.toLocaleString()}</span>
+              {/* Stock Average Calculator Custom UI */}
+              {calc?.title === "Stock Average Calculator" ? (
+                <div className="space-y-4">
+                  <div className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4 mr-135">Share Blocks</div>
+                  {shares.map((share, index) => (
+                    <div key={index} className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400 ml-3">Share {index + 1}</span>
+                        {shares.length > 2 && (
+                          <button
+                            onClick={() => setShares(shares.filter((_, i) => i !== index))}
+                            className="text-red-500 hover:text-red-700 text-sm font-bold"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 mb-1 mr-55 block">Buy Price</label>
+                          <input
+                            type="number"
+                            value={share.buyPrice}
+                            onFocus={() => {
+                              setShares(prevShares => prevShares.map((s, i) =>
+                                i === index ? { ...s, buyPrice: '' } : s
+                              ));
+                            }}
+                            onChange={(e) => {
+                              setShares(prevShares => prevShares.map((s, i) =>
+                                i === index ? { ...s, buyPrice: e.target.value } : s
+                              ));
+                            }}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 mb-1 mr-55 block">Quantity</label>
+                          <input
+                            type="number"
+                            value={share.quantity}
+                            onFocus={() => {
+                              setShares(prevShares => prevShares.map((s, i) =>
+                                i === index ? { ...s, quantity: '' } : s
+                              ));
+                            }}
+                            onChange={(e) => {
+                              setShares(prevShares => prevShares.map((s, i) =>
+                                i === index ? { ...s, quantity: e.target.value } : s
+                              ));
+                            }}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </>
-                )}
-              </div>
+                  ))}
+                  <button
+                    onClick={() => setShares([...shares, { buyPrice: '0', quantity: '0' }])}
+                    className="w-[180px] py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    + Add Share Block
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* First Input */}
+                  <div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 -mt-1">
+                      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
+                      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+                        <span className="mr-1">{isINR ? '₹' : '$'}</span>
+                        <input
+                          type="number"
+                          min={config.min1}
+                          max={config.max1}
+                          value={v1}
+                          onChange={(e) => setV1(e.target.value)}
+                          onBlur={(e) => {
+                            const val = Number(e.target.value);
+                            if (val < config.min1) setV1(String(config.min1));
+                            else if (val > config.max1) setV1(String(config.max1));
+                            else setV1(e.target.value);
+                          }}
+                          className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
+                        />
+                      </div>
+                    </div>
+                    {config.min1 !== config.max1 && (
+                      <>
+                        <input
+                          type="range"
+                          min={config.min1}
+                          max={config.max1}
+                          step={config.step1}
+                          value={v1}
+                          onChange={(e) => setV1(e.target.value)}
+                          style={getSliderStyle(percentage1, 0)}
+                          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+                        />
+                        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                          <span>{config.min1.toLocaleString()}</span>
+                          <span>{config.max1.toLocaleString()}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Second Input */}
               <div>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                   <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label2}</label>
                   <div className="flex items-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-lg font-black text-sm border border-emerald-100 dark:border-emerald-800/50">
-                    {config.isV2Currency && <span className="mr-1">$</span>}
+                    {(config.isV2Currency || calc?.title === "HRA Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                     <input
                       type="number"
                       min={config.min2}
@@ -1404,7 +1551,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       }}
                       className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                     />
-                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%"}</span>}
+                    {!config.isV2Currency && calc?.title !== "HRA Calculator" && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%"}</span>}
                   </div>
                 </div>
                 {config.min2 !== config.max2 && (
@@ -1416,6 +1563,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       step={config.step2}
                       value={v2}
                       onChange={(e) => setV2(e.target.value)}
+                      style={getSliderStyle(percentage2, 1)}
                       className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
@@ -1501,6 +1649,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         </div>
                       ) : (
                         calc?.title !== "NSC Calculator" && <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                          {calc?.title === "HRA Calculator" && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                           <input
                             type="number"
                             min={config.min3}
@@ -1515,7 +1664,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             }}
                             className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                           />
-                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
+                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
                         </div>
                       )}
                     </div>
@@ -1529,6 +1678,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         step={config.step3}
                         value={v3}
                         onChange={(e) => setV3(e.target.value)}
+                        style={getSliderStyle(percentage3)}
                         className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-indigo-600"
                       />
                       <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
@@ -1540,12 +1690,13 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 </div>
               )}
 
-              {/* Fourth Input (for SWP) */}
+              {/* Fourth Input (for SWP, EPF, HRA) */}
               {config.hasFourthSlider && (
                 <div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label4}</label>
                     <div className="flex items-center bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg font-black text-sm border border-purple-100 dark:border-purple-800/50">
+                      {calc?.title === "HRA Calculator" && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                       <input
                         type="number"
                         min={config.min4}
@@ -1560,7 +1711,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         }}
                         className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                       />
-                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
+                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
                     </div>
                   </div>
                   <input
@@ -1570,11 +1721,43 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     step={config.step4}
                     value={v4}
                     onChange={(e) => setV4(e.target.value)}
+                    style={getSliderStyle(percentage4)}
                     className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-600"
                   />
                   <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                    <span>{config.min4} Yr</span>
-                    <span>{config.max4} Yrs</span>
+                    <span>{calc?.title === "HRA Calculator" ? config.min4.toLocaleString() : `${config.min4} Yr`}</span>
+                    <span>{calc?.title === "HRA Calculator" ? config.max4.toLocaleString() : `${config.max4} Yrs`}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Metro/Non-Metro Toggle for HRA Calculator */}
+              {calc?.title === "HRA Calculator" && (
+                <div className="mt-4">
+                  {/* <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 block"></label> */}
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="cityType"
+                        value="metro"
+                        checked={isMetro}
+                        onChange={() => setIsMetro(true)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Metro</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="cityType"
+                        value="non-metro"
+                        checked={!isMetro}
+                        onChange={() => setIsMetro(false)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Non-Metro</span>
+                    </label>
                   </div>
                 </div>
               )}
@@ -1636,7 +1819,24 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 </div>
                 
                 {/* Conditional rendering based on calculator type */}
-                {calc?.title === "NPS Calculator" ? (
+                {calc?.title === "Stock Average Calculator" ? (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">Average Price</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(results.averagePrice)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-xs font-bold text-slate-500">Total Shares</span>
+                      </div>
+                      <span className="text-sm font-black text-green-600">{results.totalShares}</span>
+                    </div>
+                  </>
+                ) : calc?.title === "NPS Calculator" ? (
                   <>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
@@ -1750,6 +1950,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         <span className="text-xs font-bold text-slate-500">Annual Increase</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{results.annualIncreasePercent}%</span>
+                    </div>
+                  </>
+                ) : calc?.title === "HRA Calculator" ? (
+                  <>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(totalInvested)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.profitLabel}</span>
+                      </div>
+                      <span className="text-sm font-black">{formatCurrency(estReturns)}</span>
                     </div>
                   </>
                 ) : (
