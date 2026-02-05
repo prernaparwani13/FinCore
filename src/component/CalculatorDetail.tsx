@@ -1,5 +1,5 @@
 import Navbar from './Navbar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, Info, BookOpen,
   FileText, Zap, CircleCheck
@@ -819,36 +819,29 @@ const CALC_CONFIGS: Record<string, any> = {
   "PPF Calculator": {
     label1: "Yearly Investment", min1: 500, max1: 150000, step1: 500, def1: 500,
     label2: "Time Period", min2: 15, max2: 50, step2: 1, def2: 15,
-    hasThirdSlider: false,
+    label3: "Rate of Interest (%)", min3: 7.1, max3: 7.1, step3: 0.1, def3: 7.1,
+    hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (yearlyInvestment: number, timePeriod: number) => {
-  const rate = 0.071; // Fixed 7.1%
-  const years = timePeriod;
+  calculate: (yearlyInvestment: number, timePeriod: number, rate: number) => {
+  const r = rate / 100;
+  const n = timePeriod;
 
-  let balance = 0;
-  let totalInvested = 0;
+  const maturityValue =
+    yearlyInvestment * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
 
-  for (let year = 1; year <= years; year++) {
-    // 1. Add the investment first
-    balance += yearlyInvestment;
-    totalInvested += yearlyInvestment;
-
-    // 2. Apply interest to the balance (including the new investment)
-    balance *= (1 + rate);
-  }
-
-  const maturityValue = Math.round(balance);
-  const totalInterest = maturityValue - totalInvested;
+  const totalInvested = yearlyInvestment * n;
+  const estReturns = maturityValue - totalInvested;
 
   return {
-    totalValue: totalInvested, // Keeping your key names
-    totalInvested,
-    estReturns: totalInterest,
-    maturityValue,
-    returnPercentage: +((totalInterest / totalInvested) * 100).toFixed(2),
-    ratio: (totalInterest / totalInvested) * 100
+    totalValue: totalInvested,       
+    totalInvested,                    
+    estReturns: Math.round(estReturns),
+    maturityValue: Math.round(maturityValue),
+    returnPercentage: +((estReturns / totalInvested) * 100).toFixed(2),
+    ratio: (estReturns / totalInvested) * 100
   };
 },
+
     totalValueLabel: "Invested Amount",
     gainLabel: "RETURN %",
     investedLabel: "Total Interest",
@@ -864,6 +857,7 @@ const CALC_CONFIGS: Record<string, any> = {
     definitions: [
       { title: "Yearly Investment", desc: "The amount invested annually in the PPF account (â‚¹500 to â‚¹1.5 lakh)." },
       { title: "Time Period", desc: "The duration for which the investment is held (15-50 years)." },
+      { title: "Rate of Interest", desc: "The fixed annual interest rate offered on the PPF account (7.1%)." },
       { title: "Invested Amount", desc: "Total amount invested over the period." },
       { title: "Total Interest", desc: "Total interest earned on the investment." },
       { title: "Maturity Value", desc: "The total value available at maturity." }
@@ -968,15 +962,17 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "Post Office MIS Calculator": {
     label1: "Invested Amount", min1: 1000, max1: 450000, step1: 1000, def1: 10000,
-    label2: "Interest Rate", min2: 6.6, max2: 7.4, step2: 0.1, def2: 6.6,
-    hasThirdSlider: false,
+    label2: "Interest Rate", min2: 1, max2: 12, step2: 0.1, def2: 6.6,
+    label3: "Lock in period", min3: 5, max3: 5, step3: 1, def3: 5,
+    hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (principal: number, rate: number) => {
+    calculate: (principal: number, rate: number, lockInPeriod: number) => {
       const P = Number(principal);
       const r = Number(rate) / 100;
+      const years = Number(lockInPeriod);
       const monthlyIncome = (P * r) / 12;
       const totalInvested = P;
-      const totalIncome = monthlyIncome * 60; // 5 years * 12 months
+      const totalIncome = monthlyIncome * years * 12;
       const estReturns = totalIncome - P;
 
       return {
@@ -984,14 +980,14 @@ const CALC_CONFIGS: Record<string, any> = {
         totalInvested: P,
         estReturns: Math.round(estReturns),
         returnPercentage: rate,
-        years: 5,
+        years: years,
         ratio: (estReturns / P) * 100
       };
     },
     totalValueLabel: "MONTHLY Income",
     gainLabel: "INTEREST RATE %",
     investedLabel: "Total Investment",
-    profitLabel: "Total Income",
+    profitLabel: "Invested Amount",
     formulaText: "This Post Office MIS calculator calculates monthly income based on invested amount and interest rate:",
     formulaLatex: "Monthly Income = (Principal Ã— Rate) Ã· 12",
     formulaVars: "Principal = Invested Amount, Rate = Annual Interest Rate (%), Monthly Income = Amount received monthly",
@@ -1003,8 +999,8 @@ const CALC_CONFIGS: Record<string, any> = {
     definitions: [
       { title: "Invested Amount", desc: "The lump sum amount invested in Post Office MIS (â‚¹1,000 to â‚¹4.5 lakh)." },
       { title: "Interest Rate", desc: "The annual interest rate offered on the MIS investment." },
-      { title: "Invested Amount", desc: "The monthly income received from the investment." },
-      { title: "Interest Rate", desc: "The annual percentage rate at which interest is calculated." }
+      { title: "Lock in period", desc: "The fixed duration for which the investment is locked in (5 years)." },
+      { title: "Monthly Income", desc: "The monthly income received from the investment." }
     ]
   },
   "Gratuity Calculator": {
@@ -1020,7 +1016,7 @@ const CALC_CONFIGS: Record<string, any> = {
         estReturns: years,
         returnPercentage: 0,
         years: years,
-        ratio: 0
+        ratio: (years / 30) * 100
       };
     },
     totalValueLabel: "TOTAL GRATUITY PAYABLE",
@@ -1121,13 +1117,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
 
-  const [v1, setV1] = useState<string>(String(config.def1 || config.min1));
-  const [v2, setV2] = useState<string>(String(config.def2 || config.min2));
-  const [v3, setV3] = useState<string>(String(config.def3 || config.min3 || 0));
-  const [v4, setV4] = useState<string>(String(config.def4 || config.min4 || 0));
+  const [v1, setV1] = useState<string>(String(config.min1));
+  const [v2, setV2] = useState<string>(String(config.min2));
+  const [v3, setV3] = useState<string>(String(config.min3 || 0));
+  const [v4, setV4] = useState<string>(String(config.min4 || 0));
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Calculation
   const val1 = Number(v1) || (config.def1 || config.min1);
@@ -1153,6 +1150,13 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   }
 
   const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0 } = results;
+
+  // Trigger animation when ratio changes
+  useEffect(() => {
+    setIsAnimating(true);
+    const timer = setTimeout(() => setIsAnimating(false), 300);
+    return () => clearTimeout(timer);
+  }, [ratio]);
 
   const formatCurrency = (amount: number) => {
     const convertedAmount = isINR ? amount * 83 : amount;
@@ -1346,26 +1350,32 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           <option value="Months">Months</option>
                         </select>
                       )}
-                      <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
-                        <input
-                          type="number"
-                          min={config.min3}
-                          max={config.max3}
-                          value={v3}
-                          onChange={(e) => setV3(e.target.value)}
-                          onBlur={(e) => {
-                            const val = Number(e.target.value);
-                            if (val < config.min3) setV3(String(config.min3));
-                            else if (val > config.max3) setV3(String(config.max3));
-                            else setV3(e.target.value);
-                          }}
-                          className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
-                        />
-                        {calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>}
-                      </div>
+                      {calc?.title === "PPF Calculator" ? (
+                        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                          <span className="text-right">7.1%</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                          <input
+                            type="number"
+                            min={config.min3}
+                            max={config.max3}
+                            value={v3}
+                            onChange={(e) => setV3(e.target.value)}
+                            onBlur={(e) => {
+                              const val = Number(e.target.value);
+                              if (val < config.min3) setV3(String(config.min3));
+                              else if (val > config.max3) setV3(String(config.max3));
+                              else setV3(e.target.value);
+                            }}
+                            className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+                          />
+                          {calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {config.min3 !== config.max3 && (
+                  {config.min3 !== config.max3 && calc?.title !== "PPF Calculator" && (
                     <>
                       <input
                         type="range"
@@ -1446,7 +1456,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
-                    className="transition-all duration-700 ease-in-out"
+                    className={`transition-all duration-700 ease-in-out ${isAnimating ? 'animate-pulse' : ''}`}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -1599,6 +1609,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           calc?.title === "FD Calculator" ? totalInvested :
                           calc?.title === "Lumpsum Calculator" ? totalInvested :
                           calc?.title === "Inflation Calculator" ? totalInvested :
+                          calc?.title === "Post Office MIS Calculator" ? totalInvested :
+                          calc?.title === "PPF Calculator" ? maturityValue :
                           estReturns
                         )}
                       </span>
