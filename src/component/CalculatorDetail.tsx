@@ -1037,6 +1037,128 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Gratuity", desc: "A lump sum payment made to an employee upon retirement or resignation." }
     ]
   },
+  "EPF Calculator": {
+    label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 30000,
+    label2: "Your age", min2: 18, max2: 59, step2: 1, def2: 25,
+    label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 12,
+    label4: "Annual increase in salary (%)", min4: 1, max4: 15, step4: 0.5, def4: 5,
+    label5: "Rate of interest (%)", min5: 8.25, max5: 8.25, step5: 0.01, def5: 8.25,
+    hasThirdSlider: true,
+    hasFourthSlider: true,
+    hasFifthSlider: true,
+    isV2Currency: false,
+   calculate: (
+  monthlySalary = 0,
+  age = 18,
+  contributionPercent = 12,
+  annualIncreasePercent = 0,
+  interestRate = 8.25
+) => {
+  const yearsToRetirement = Math.max(0, 60 - age);
+  const months = yearsToRetirement * 12;
+  
+  const monthlyRate = interestRate / 100 / 12;
+  const annualIncreaseRate = annualIncreasePercent / 100;
+
+  let balance = 0;
+  let totalInvested = 0;
+  let currentSalary = monthlySalary;
+
+  for (let month = 1; month <= months; month++) {
+    // Add monthly contribution FIRST (employee + employer)
+    const monthlyContribution = (currentSalary * contributionPercent * 2) / 100;
+    balance += monthlyContribution;
+    totalInvested += monthlyContribution;
+    
+    // Then apply interest on the updated balance
+    balance = balance * (1 + monthlyRate);
+
+    // Increase salary at the END of each year
+    if (month % 12 === 0) {
+      currentSalary *= (1 + annualIncreaseRate);
+    }
+  }
+
+  const estReturns = balance - totalInvested;
+
+  return {
+    totalValue: Math.round(balance),
+    totalInvested: Math.round(totalInvested),
+    estReturns: Math.round(estReturns),
+    returnPercentage: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
+    years: yearsToRetirement,
+    ratio: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
+    monthlySalary,
+    annualIncreasePercent,
+    interestRate
+  };
+},
+
+    totalValueLabel: "ACCUMULATED BY RETIREMENT",
+    gainLabel: "RETURN %",
+    investedLabel: "Monthly Salary",
+    profitLabel: "Annual Increase",
+    formulaText: "This EPF calculator simulates monthly contributions with compound interest and annual salary increases until retirement at age 60.",
+    formulaLatex: "Balance = âˆ‘ (Contribution Ã— (1 + r)^remaining_months)",
+    formulaVars: "Contribution = Monthly salary Ã— Contribution %, r = Monthly interest rate, remaining_months = Months until retirement",
+    useCases: [
+      "Planning retirement savings through EPF contributions.",
+      "Estimating EPF maturity amount with salary growth.",
+      "Understanding the impact of contribution percentage and salary increases."
+    ],
+    definitions: [
+      { title: "Monthly Salary (Basic+DA)", desc: "Your current monthly basic salary plus dearness allowance." },
+      { title: "Your Age", desc: "Your current age, used to calculate years until retirement at 60." },
+      { title: "Your Contribution (%)", desc: "The percentage of your salary contributed to EPF (typically 12% for employees)." },
+      { title: "Annual Increase in Salary (%)", desc: "Expected annual percentage increase in your salary." },
+      { title: "Rate of Interest (%)", desc: "Fixed annual interest rate of 8.25% compounded monthly." },
+      { title: "Accumulated by Retirement", desc: "Total EPF balance at retirement including contributions and interest." }
+    ]
+  },
+  "NSC Calculator": {
+    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 1000,
+    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 6.8,
+    label3:"Compounding Frequency", options3: ["Half-yearly"], def3: "Half-yearly",
+    hasThirdSlider: true,
+    isV2Currency: false,
+    calculate: (amountInvested: number, rate: number) => {
+  const P = Number(amountInvested);
+  const r = Number(rate) / 100;
+  const t = 5; // NSC fixed tenure (5 years)
+
+  // NSC compounds ANNUALLY, not half-yearly
+  const totalValue = P * Math.pow(1 + r, t);
+  const estReturns = totalValue - P;
+
+  return {
+    totalValue: Math.round(totalValue),
+    totalInvested: P,
+    estReturns: Math.round(estReturns),
+    returnPercentage: +((estReturns / P) * 100).toFixed(2),
+    years: t,
+    ratio: +((estReturns / P) * 100).toFixed(2)
+  };
+},
+
+    totalValueLabel: "TOTAL AMOUNT",
+    gainLabel: "RETURN %",
+    investedLabel: "Amount Invested",
+    profitLabel: "Total Interest",
+    formulaText: "This NSC calculator uses compound interest formula with half-yearly compounding over 5 years:",
+    formulaLatex: "FV = P Ã— (1 + r/2)^(2 Ã— 5)",
+    formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate",
+    useCases: [
+      "Planning investments in National Savings Certificates.",
+      "Estimating maturity value and interest earned.",
+      "Comparing NSC returns with other investment options."
+    ],
+    definitions: [
+      { title: "Amount Invested", desc: "The initial amount invested in NSC." },
+      { title: "Rate of Interest (p.a.)", desc: "The annual interest rate offered on NSC." },
+      { title: "Total Amount", desc: "The maturity value including principal and interest." },
+      { title: "Total Interest", desc: "The total interest earned over 5 years." }
+    ]
+  },
   "Income Tax Calculator": {
     calculate: (grossSalary: number, otherSources: number, interestIncome: number, rentalIncome: number, homeLoanInterestSelf: number, homeLoanInterestLetOut: number, deduction80C: number, deduction80CCD1B: number, deduction80D: number, deduction80G: number, deduction80E: number, deduction80TTA: number, basicSalary: number, da: number, hraReceived: number, rentPaid: number, isMetro: number, ageCategory: number) => {
       // Calculate total income
@@ -1124,6 +1246,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
+  const [frequency, setFrequency] = useState(2); // default half-yearly
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Calculation
@@ -1281,7 +1404,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       }}
                       className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                     />
-                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : "%"}</span>}
+                    {!config.isV2Currency && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%"}</span>}
                   </div>
                 </div>
                 {config.min2 !== config.max2 && (
@@ -1296,12 +1419,24 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : "%")}</span>
-                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : "%")}</span>
+                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
+                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
                     </div>
                   </>
                 )}
               </div>
+
+              {/* Fixed Time Period for NSC Calculator */}
+              {calc?.title === "NSC Calculator" && (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+                    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">Time Period</label>
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-lg font-black text-sm border border-gray-100 dark:border-gray-800/50">
+                      <span className="text-right">5 Years</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* GST Mode Radio Buttons */}
               {calc?.title === "GST Calculator" && (
@@ -1350,12 +1485,22 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           <option value="Months">Months</option>
                         </select>
                       )}
+                      {calc?.title === "NSC Calculator" && (
+                        <select
+                          value={v3}
+                          onChange={(e) => setV3(e.target.value)}
+                          className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
+                        >
+                          <option value="1">Yearly</option>
+                          <option value="2">Half-Yearly</option>
+                        </select>
+                      )}
                       {calc?.title === "PPF Calculator" ? (
                         <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
                           <span className="text-right">7.1%</span>
                         </div>
                       ) : (
-                        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                        calc?.title !== "NSC Calculator" && <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
                           <input
                             type="number"
                             min={config.min3}
@@ -1370,7 +1515,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             }}
                             className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                           />
-                          {calc?.title === "SWP Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
+                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
                         </div>
                       )}
                     </div>
@@ -1415,7 +1560,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         }}
                         className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                       />
-                      <span className="ml-1 text-[12px] uppercase">Yrs</span>
+                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
                     </div>
                   </div>
                   <input
@@ -1430,6 +1575,18 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
                     <span>{config.min4} Yr</span>
                     <span>{config.max4} Yrs</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Fifth Input (for EPF) */}
+              {config.hasFifthSlider && (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+                    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label5}</label>
+                    <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg font-black text-sm border border-orange-100 dark:border-orange-800/50">
+                      <span className="text-right">{config.def5}%</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1578,26 +1735,25 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black text-blue-600">{years} YRS</span>
                     </div>
                   </>
-                ) : (
+                ) : calc?.title === "EPF Calculator" ? (
                   <>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
-                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
+                        <span className="text-xs font-bold text-slate-500">Monthly Salary</span>
                       </div>
-                      <span className="text-sm font-black">
-                        {calc?.title === "Post Office MIS Calculator" ? `${returnPercentage}%` : formatCurrency(
-
-                          calc?.title === "Simple Interest" ? estReturns :
-                          calc?.title === "Compound Interest" ? totalInvested :
-                          calc?.title === "SIP Calculator" || calc?.title === "Lumpsum Calculator" ? estReturns :
-                          calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
-                          calc?.title === "SWP Calculator" ? results.finalValue :
-                          calc?.title === "Inflation Calculator" ? estReturns :
-                          estReturns
-                        )}
-                      </span>
+                      <span className="text-sm font-black">{formatCurrency(results.monthlySalary)}</span>
                     </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-slate-500">Annual Increase</span>
+                      </div>
+                      <span className="text-sm font-black text-blue-600">{results.annualIncreasePercent}%</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -1614,6 +1770,25 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           calc?.title === "Post Office MIS Calculator" ? totalInvested :
                           calc?.title === "PPF Calculator" ? maturityValue :
                           calc?.title === "Simple Interest" ? totalInvested :
+                          estReturns
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
+                      </div>
+                      <span className="text-sm font-black">
+                        {calc?.title === "NSC Calculator" ? formatCurrency(totalInvested) :
+                        calc?.title === "Post Office MIS Calculator" ? `${returnPercentage}%` : formatCurrency(
+
+                          calc?.title === "Simple Interest" ? estReturns :
+                          calc?.title === "Compound Interest" ? totalInvested :
+                          calc?.title === "SIP Calculator" || calc?.title === "Lumpsum Calculator" ? estReturns :
+                          calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
+                          calc?.title === "SWP Calculator" ? results.finalValue :
+                          calc?.title === "Inflation Calculator" ? estReturns :
                           estReturns
                         )}
                       </span>

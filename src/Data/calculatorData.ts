@@ -28,4 +28,6 @@ export const calculatorData: CalculatorItem[] = [
   { title: "SCSS Calculator", description: "Calculate returns on Senior Citizen Savings Scheme with yearly investment, fixed tenure, and interest rate.", category: "INVESTMENT", icon: "💰", color: "green" },
   { title: "Post Office MIS Calculator", description: "Calculate monthly income from Post Office Monthly Income Scheme with invested amount and interest rate.", category: "INVESTMENT", icon: "🏛️", color: "green" },
   { title: "Gratuity Calculator", description: "Calculate gratuity amount based on monthly salary and years of service.", category: "RETIREMENT", icon: "💰", color: "purple" },
+  { title: "EPF Calculator", description: "Calculate your EPF maturity amount based on salary, age, contribution, and salary growth.", category: "RETIREMENT", icon: "🏦", color: "purple" },
+  { title: "NSC Calculator", description: "Calculate National Savings Certificate maturity value, total investment, and interest earned.", category: "INVESTMENT", icon: "🏛️", color: "green" },
 ];
