@@ -33,8 +33,8 @@ const CALC_CONFIGS: Record<string, any> = {
   const totalValue =
     monthly *
     ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) *
-    (1 + monthlyRate);  
-    
+    (1 + monthlyRate);
+
   // 3ï¸âƒ£ Estimated Returns
   const estimatedReturns = totalValue - investedAmount;
 
@@ -52,7 +52,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Est. returns",
     profitLabel: "Total value",
     formulaText: "This SIP calculator uses the future value of an annuity formula:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r] Ã— (1 + r)",
+    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r]",
     formulaVars: "FV = Future value, P = Monthly investment, r = Monthly interest rate, n = Number of months",
     useCases: [
       "Planning long-term savings through regular investments.",
@@ -143,13 +143,13 @@ const CALC_CONFIGS: Record<string, any> = {
       const totalPayments = monthlyPayment * numPayments;
       const interest = totalPayments - loanAmount;
       return {
-        totalValue: monthlyPayment,
+        totalValue: Math.round(monthlyPayment),
         years: termYears,
-        returnPercentage: (interest / loanAmount) * 100,
+        returnPercentage: +((interest / loanAmount) * 100).toFixed(2),
         totalInvested: Math.round(loanAmount),
-        estReturns: interest,
-        finalAmount: totalPayments,
-        ratio: (interest / loanAmount) * 100
+        estReturns: Math.round(interest),
+        finalAmount: Math.round(totalPayments),
+        ratio: +((interest / loanAmount) * 100).toFixed(2)
       };
     },
     totalValueLabel: "MONTHLY PAYMENT",
@@ -197,7 +197,7 @@ const CALC_CONFIGS: Record<string, any> = {
     totalValueLabel: "TOTAL INTEREST",
     gainLabel: "INTEREST %",
     investedLabel: "Initial Principal",
-    profitLabel: "Total Interest",
+    profitLabel: "Principal Amount",
     formulaText: "This calculator uses the standard compound interest formula for a lump sum investment:",
     
     formulaLatex: "FV = P(1 + r)^n", 
@@ -371,8 +371,8 @@ const CALC_CONFIGS: Record<string, any> = {
     },
     totalValueLabel: "TOTAL AMOUNT",
     gainLabel: "INTEREST %",
-    investedLabel: "Principal Amount",
-    profitLabel: "Total Interest",
+    investedLabel: "Total Interest",
+    profitLabel: "Principal Amount",
     formulaText: "This simple interest calculator uses the basic interest formula:",
     formulaLatex: "SI = P Ã— R Ã— T / 100, Total Amount = P + SI",
     formulaVars: "SI = Simple Interest, P = Principal Amount, R = Rate of Interest (%), T = Time Period (Years)",
@@ -757,12 +757,12 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "SWP Calculator": {
     label1: "Total Investment", min1: 10000, max1: 10000000, step1: 1000, def1: 10000,
-    label2: "Withdraw per month", min2: 100, max2: 100000, step2: 100, def2: 100,
-    label3: "Expected return rate", min3: 1, max3: 20, step3: 0.1, def3: 1,
-    label4: "Time period", min4: 1, max4: 50, step4: 1, def4: 10,
+    label2: "Withdraw per month", min2: 500, max2: 50000, step2: 500, def2: 1000,
+    label3: "Expected return rate", min3: 0, max3: 30, step3: 0.5, def3: 5,
+    label4: "Time period", min4: 5, max4: 30, step4: 1, def4: 10,
     hasThirdSlider: true,
     hasFourthSlider: true,
-    isV2Currency: false,
+    isV2Currency: true,
     isV4Currency: false,
     calculate: (
   totalInvestment: number,
@@ -1370,7 +1370,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             }}
                             className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                           />
-                          {calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>}
+                          {calc?.title === "SWP Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
                         </div>
                       )}
                     </div>
@@ -1588,7 +1588,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black">
                         {calc?.title === "Post Office MIS Calculator" ? `${returnPercentage}%` : formatCurrency(
 
-                          calc?.title === "Simple Interest" ? totalInvested :
+                          calc?.title === "Simple Interest" ? estReturns :
+                          calc?.title === "Compound Interest" ? totalInvested :
                           calc?.title === "SIP Calculator" || calc?.title === "Lumpsum Calculator" ? estReturns :
                           calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
                           calc?.title === "SWP Calculator" ? results.finalValue :
@@ -1605,12 +1606,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black text-blue-600">
                         {formatCurrency(
                           calc?.title === "Mutual Funds Returns" ? totalInvested :
-                          calc?.title === "SIP Calculator" || calc?.title === "Compound Interest" || calc?.title === "RD Calculator" ? totalValue :
+                          calc?.title === "SIP Calculator" || calc?.title === "RD Calculator" ? totalValue :
+                          calc?.title === "Compound Interest" ? totalInvested :
                           calc?.title === "FD Calculator" ? totalInvested :
                           calc?.title === "Lumpsum Calculator" ? totalInvested :
                           calc?.title === "Inflation Calculator" ? totalInvested :
                           calc?.title === "Post Office MIS Calculator" ? totalInvested :
                           calc?.title === "PPF Calculator" ? maturityValue :
+                          calc?.title === "Simple Interest" ? totalInvested :
                           estReturns
                         )}
                       </span>
