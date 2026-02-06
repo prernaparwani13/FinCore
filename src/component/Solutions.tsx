@@ -9,10 +9,12 @@ const Solutions: React.FC = () => {
   const navigate = useNavigate();
 
   const topCards = [
-    { title: "For Homebuyers", desc: "Navigate mortgages, amortization, and affordability with confidence.", icon: <Home size={40} /> },
+    { title: "For Home", desc: "Navigate mortgages, amortization, and affordability with confidence.", icon: <Home size={40} /> },
     { title: "For Investors", desc: "Project returns, understand inflation, and plan for long-term wealth.", icon: <TrendingUp size={40} /> },
     { title: "For Students", desc: "Manage loans, plan savings, and understand the cost of education.", icon: <GraduationCap size={40} /> },
     { title: "For Business", desc: "Calculate ROI, break-even points, and profit margins effectively.", icon: <Briefcase size={40} /> },
+    {title: "Government Schemes", desc: "Explore and calculate benefits from various government financial schemes.", icon: <ShieldCheck size={40} /> },
+    {title: "For Retirement", desc: "Plan your retirement savings and understand your future financial needs.", icon: <Users size={40} /> },
   ];
 
   const features = [
@@ -45,7 +47,7 @@ const Solutions: React.FC = () => {
             <div
               key={i}
               className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 text-center flex flex-col items-center hover:shadow-md dark:hover:shadow-slate-800/50 transition-shadow border border-slate-100 dark:border-slate-800 cursor-pointer"
-              onClick={() => navigate(`/category/${card.title.toLowerCase().replace('for ', '')}`)}
+              onClick={() => navigate(`/category/${card.title.toLowerCase().replace('for ', '').replace('government ', '')}`)}
             >
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600 dark:text-slate-400">
                 {card.icon}

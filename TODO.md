@@ -1,13 +1,6 @@
-# SSY Calculator Fixes
+# TODO: Implement Focus on Calculator Card When Navigating Back
 
-## Tasks
-- [x] Fix SSY calculation logic: Change from ordinary annuity to annuity due (add investment first, then apply interest)
-- [x] Add $ prefix to Yearly Investment input field for SSY Calculator
-- [x] Change Girl's Age label from % to yr in input field and range labels
-
-## Files to Edit
-- src/component/CalculatorDetail.tsx
-
-## Followup Steps
-- Test the calculator with different inputs to ensure logic is correct
-- Verify labels display correctly
+## Steps to Complete
+- [ ] Add `tabIndex={0}` to the main div in `CalculatorCard.tsx` for keyboard accessibility
+- [ ] Add `tabIndex={0}` to the main div in `CalculatorListItem.tsx` for keyboard accessibility
+- [ ] Update `Calculators.tsx` to call `element.focus()` after scrolling to the last selected calculator card

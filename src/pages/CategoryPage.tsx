@@ -9,17 +9,21 @@ const CategoryPage: React.FC = () => {
   const navigate = useNavigate();
 
   const categoryHeadings: { [key: string]: string[] } = {
-    "homebuyers": ["Mortgage", "Loan Amortization", "Auto Loan"],
-    "investors": ["Compound Interest", "Retirement Planner", "Simple Interest"],
-    "students": ["Auto Loan", "Simple Interest", "Compound Interest"],
-    "business": ["ROI", "GST"],
+    "home": ["Mortgage", "Loan Amortization", "Auto Loan" ],
+    "investors": [ "FD Calculator" , "Lumpsum Calculator" , "Mutual Funds Returns", "NSC Calculator" , "RD Calculator" ,"SIP Calculators", "Stock Average Calculator" ,"SWP Calculator"],
+    "students": ["Simple Interest", "Compound Interest"],
+    "business": ["ROI", "GST" , "Salary Calculator", "Gratuity Calculator", "Inflation Calculator"],
+    "schemes": ["NPS Calculator", "PPF Calculator", "SCSS Calculator", "SSY Calculator",  "Post Office MIS Calculator"],
+    "retirement": ["Retirement Planner", "NPS Calculator", "EPF Calculator"],
   };
 
   const categoryTitles: { [key: string]: string } = {
-    "homebuyers": "For Homebuyers",
+    "home": "For Home",
     "investors": "For Investors",
     "students": "For Students",
     "business": "For Business",
+    "schemes": "Government Schemes",
+    "retirement": "For Retirement",
   };
 
   const headings = category ? categoryHeadings[category.toLowerCase()] : [];
@@ -35,7 +39,24 @@ const headingToCalcTitle: { [key: string]: string } = {
   "Retirement Planner": "Retirement Planner",
   "Simple Interest": "Simple Interest", 
   "ROI": "ROI Calculator",             
-  "GST": "GST Calculator",              
+  "GST": "GST Calculator",  
+  "Salary Calculator": "Salary Calculator",
+  "Gratuity Calculator": "Gratuity Calculator",
+  "Inflation Calculator": "Inflation Calculator",
+  "FD Calculator": "FD Calculator",
+  "Lumpsum Calculator": "Lumpsum Calculator",
+  "Mutual Funds Returns": "Mutual Funds Returns",
+  "NSC Calculator": "NSC Calculator",
+  "RD Calculator": "RD Calculator",
+  "SIP Calculators": "SIP Calculator",
+  "Stock Average Calculator": "Stock Average Calculator",
+  "SWP Calculator": "SWP Calculator",  
+  "NPS Calculator": "NPS Calculator",
+  "PPF Calculator": "PPF Calculator",
+  "SCSS Calculator": "SCSS Calculator",
+  "SSY Calculator": "SSY Calculator",
+  "Post Office MIS Calculator": "Post Office MIS Calculator",
+   "EPF Calculator": "EPF Calculator",       
 };
 
   const [selectedCalculator, setSelectedCalculator] = useState<string | null>(null);
@@ -56,7 +77,7 @@ const headingToCalcTitle: { [key: string]: string } = {
   };
 
   const handleBack = () => {
-    if (category === 'homebuyers' || category === 'investors' || category === 'students' || category === 'business') {
+    if (category === 'home' || category === 'investors' || category === 'students' || category === 'business' || category === 'schemes' || category === 'retirement') {
       navigate('/Solutions');
     } else if (category && headings.length > 0) {
       setSelectedCalculator(headingToCalcTitle[headings[0]]);
@@ -74,12 +95,12 @@ const headingToCalcTitle: { [key: string]: string } = {
           <p className="text-slate-500 dark:text-slate-300 text-lg">Explore the calculators tailored for you.</p>
         </section>
         <section className={`max-w-[1500px] mx-auto px-4 ${selectedCalculator ? 'mb-8' : 'mb-32'}`}>
-          <div className="flex justify-center gap-3 mr-195">
+          <div className="flex justify-center gap-3 mr-20">
             {headings.map((heading, i) => (
               <div
                 key={i}
                 onClick={() => handleCalculatorClick(heading)}
-                className={`px-4 md:px-5 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all  ${
+                className={`px-4 md:px-4 py-2.5  rounded-full text-sm font-bold cursor-pointer transition-all  ${
                   selectedCalculator === headingToCalcTitle[heading]
                     ? 'bg-blue-100 dark:bg-blue-600 text-white shadow-lg hover:bg-slate-100 dark:hover:bg-blue-200'
                     : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-white border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-500'

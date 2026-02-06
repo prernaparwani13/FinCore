@@ -766,35 +766,37 @@ const CALC_CONFIGS: Record<string, any> = {
 ) => {
   const monthlyRate = expectedReturn / 100 / 12;
   const totalMonths = timePeriodYears * 12;
-  
+
   let currentBalance = totalInvestment;
-  const totalWithdrawal = withdrawPerMonth * totalMonths;
+  let actualWithdrawals = 0;
 
   for (let i = 0; i < totalMonths; i++) {
     // 1. Withdrawal happens at the START of the month
     currentBalance -= withdrawPerMonth;
-    
+    actualWithdrawals += withdrawPerMonth;
+
     // 2. Interest is earned on the REMAINING balance
     currentBalance += currentBalance * monthlyRate;
 
-    // 3. If balance hits zero, stop
+    // 3. If balance hits zero, undo the last withdrawal and stop
     if (currentBalance < 0) {
       currentBalance = 0;
+      actualWithdrawals -= withdrawPerMonth;
       break;
     }
   }
 
   const finalValue = Math.round(currentBalance);
-  const estReturns = totalWithdrawal + finalValue - totalInvestment;
+  const estReturns = actualWithdrawals + finalValue - totalInvestment;
 
   return {
-    totalValue: Math.round(totalWithdrawal),
+    totalValue: Math.round(actualWithdrawals),
     totalInvested: totalInvestment,
     finalValue: finalValue,
     estReturns: Math.round(estReturns),
     returnPercentage: ((estReturns / totalInvestment) * 100).toFixed(2),
     years: timePeriodYears,
-    ratio: (totalWithdrawal / totalInvestment).toFixed(2),
+    ratio: (actualWithdrawals / totalInvestment).toFixed(2),
   };
 },
     totalValueLabel: "TOTAL WITHDRAWAL",
@@ -1040,7 +1042,7 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "EPF Calculator": {
     label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 30000,
-    label2: "Your age", min2: 18, max2: 59, step2: 1, def2: 25,
+    label2: "Your age", min2: 15, max2: 58, step2: 1, def2: 25,
     label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 12,
     label4: "Annual increase in salary (%)", min4: 1, max4: 15, step4: 0.5, def4: 5,
     label5: "Rate of interest (%)", min5: 8.25, max5: 8.25, step5: 0.01, def5: 8.25,
@@ -1059,27 +1061,28 @@ const CALC_CONFIGS: Record<string, any> = {
   const annualIncreaseRate = annualIncreasePercent / 100;
   const r = interestRate / 100;
 
-  let balance = 0;
   let totalInvested = 0;
+  let futureValue = 0;
   let currentSalary = monthlySalary;
 
-  for (let year = 1; year <= yearsToRetirement; year++) {
-    // 1. Calculate Monthly Contribution 
-    // Uses the flat 15.67% rule (12% Employee + 3.67% Employer)
+  for (let year = 0; year < yearsToRetirement; year++) {
+    // Monthly contribution (Employee % + 3.67% Employer)
     const monthlyContribution = (currentSalary * (contributionPercent + 3.67)) / 100;
     const yearlyContribution = monthlyContribution * 12;
-
-    // 2. The Groww/Industry Formula: 
-    // Closing Balance = (Opening Balance + Yearly Contribution) * (1 + Interest Rate)
-    // This effectively gives full-year interest on the current year's contributions.
-    balance = (balance + yearlyContribution) * (1 + r);
     
     totalInvested += yearlyContribution;
+    
+    // Calculate how many years this contribution will compound
+    const yearsRemaining = yearsToRetirement - year;
+    
+    // Future value of this year's contribution
+    futureValue += yearlyContribution * Math.pow(1 + r, yearsRemaining);
 
-    // 3. Apply salary hike for the next year
+    // Apply salary hike for the next year
     currentSalary *= (1 + annualIncreaseRate);
   }
 
+  const balance = futureValue;
   const estReturns = balance - totalInvested;
 
   return {
@@ -1099,8 +1102,8 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Monthly Salary",
     profitLabel: "Annual Increase",
     formulaText: "This EPF calculator simulates monthly contributions with compound interest and annual salary increases until retirement at age 60.",
-    formulaLatex: "Balance = âˆ‘ (Contribution Ã— (1 + r)^remaining_months)",
-    formulaVars: "Contribution = Monthly salary Ã— Contribution %, r = Monthly interest rate, remaining_months = Months until retirement",
+    formulaLatex: "FV = ∑ (Yearly Contribution × (1 + r)^years_remaining)",
+    formulaVars: "Contribution = Monthly salary × Contribution %, r = Annual interest rate",
     useCases: [
       "Planning retirement savings through EPF contributions.",
       "Estimating EPF maturity amount with salary growth.",
@@ -1111,7 +1114,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Your Age", desc: "Your current age, used to calculate years until retirement at 60." },
       { title: "Your Contribution (%)", desc: "The percentage of your salary contributed to EPF (typically 12% for employees)." },
       { title: "Annual Increase in Salary (%)", desc: "Expected annual percentage increase in your salary." },
-      { title: "Rate of Interest (%)", desc: "Fixed annual interest rate of 8.25% compounded monthly." },
+      { title: "Rate of Interest (%)", desc: "Fixed annual interest rate of 8.25% compounded annually." },
       { title: "Accumulated by Retirement", desc: "Total EPF balance at retirement including contributions and interest." }
     ]
   },
@@ -1739,8 +1742,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-600"
                   />
                   <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                    <span>{calc?.title === "HRA Calculator" ? config.min4.toLocaleString() : `${config.min4} Yr`}</span>
-                    <span>{calc?.title === "HRA Calculator" ? config.max4.toLocaleString() : `${config.max4} Yrs`}</span>
+                    <span>{calc?.title === "HRA Calculator" ? config.min4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.min4}%` : `${config.min4} Yr`}</span>
+                    <span>{calc?.title === "HRA Calculator" ? config.max4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.max4}%` : `${config.max4} Yrs`}</span>
                   </div>
                 </div>
               )}
