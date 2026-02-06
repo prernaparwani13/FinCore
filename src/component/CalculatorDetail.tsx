@@ -14,58 +14,58 @@ interface Props {
 
 const CALC_CONFIGS: Record<string, any> = {
   "SIP Calculator": {
-    label1: "Monthly Investment", min1: 100, max1: 100000, step1: 100, def1: 100,
-    label2: "Expected return(p.a.)", min2: 1, max2: 20, step2: 0.1, def2: 1,
-    label3: "Time period", min3: 1, max3: 40, step3: 1, def3: 1,
+    label1: "Monthly Investment", min1: 100, max1: 100000, step1: 100, def1: 5000,
+    label2: "Expected return(p.a.)", min2: 1, max2: 30, step2: 0.1, def2: 12,
+    label3: "Time period", min3: 1, max3: 40, step3: 1, def3: 10,
     hasThirdSlider: true,
     isV2Currency: false,
-  calculate: (_monthly: number, _rate: number, _years: number) => {
-  const monthly = Number(_monthly);        // SIP amount
-  const annualRate = Number(_rate);        // % p.a.
-  const years = Number(_years);
 
-  const months = years * 12;
-  const monthlyRate = annualRate / 100 / 12;
+    calculate: (_monthly: number, _rate: number, _years: number) => {
+        const monthly = Number(_monthly);
+        const annualRate = Number(_rate) / 100;
+        const years = Number(_years);
+        const months = years * 12;
 
-  // 1ï¸âƒ£ Invested Amount
-  const investedAmount = monthly * months;
+        const investedAmount = monthly * months;
 
-  // 2ï¸âƒ£ Total Value (Standard SIP Formula)
-  const totalValue =
-    monthly *
-    ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) *
-    (1 + monthlyRate);
+        // 1. CALCULATE EFFECTIVE MONTHLY RATE
+        // Most modern calculators use this to avoid over-inflating returns
+        const r = Math.pow(1 + annualRate, 1/12) - 1;
 
-  // 3ï¸âƒ£ Estimated Returns
-  const estimatedReturns = totalValue - investedAmount;
+        // 2. CALCULATE FUTURE VALUE (Annuity Due)
+        // Formula: P * [((1 + r)^n - 1) / r] * (1 + r)
+        const totalValue = monthly * ((Math.pow(1 + r, months) - 1) / r) * (1 + r);
 
-  return {
-    totalInvested: Math.round(investedAmount),
-    estReturns: Math.round(estimatedReturns),
-    totalValue: Math.round(totalValue),
-    years: Math.trunc(years),
-    returnPercentage: +((estimatedReturns / investedAmount) * 100).toFixed(2),
-    ratio: +((estimatedReturns / investedAmount) * 100).toFixed(2)
-  };
-},
-    totalValueLabel: "Invested Amount",
-    gainLabel: "TOTAL RETURN %",
-    investedLabel: "Est. returns",
-    profitLabel: "Total value",
-    formulaText: "This SIP calculator uses the future value of an annuity formula:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r]",
-    formulaVars: "FV = Future value, P = Monthly investment, r = Monthly interest rate, n = Number of months",
+        const estimatedReturns = totalValue - investedAmount;
+        const returnPercentage = investedAmount === 0 ? 0 : (estimatedReturns / investedAmount) * 100;
+
+        return {
+            totalInvested: Math.round(investedAmount),
+            estReturns: Math.round(estimatedReturns),
+            totalValue: Math.round(totalValue),
+            years: Math.trunc(years),
+            returnPercentage: +returnPercentage.toFixed(2),
+            ratio: +returnPercentage.toFixed(2),
+        };
+    },
+
+    totalValueLabel: "TOTAL VALUE",
+    gainLabel: "EST. RETURNS %",
+    investedLabel: "Invested Amount",
+    profitLabel: "Est. Returns",
+    formulaText: "This calculator uses the future value of an annuity due with effective monthly compounding:",
+    formulaLatex: "FV = P \\times \\frac{(1 + r)^n - 1}{r} \\times (1 + r)",
+    formulaVars: "r = (1 + \\text{annual rate})^{1/12} - 1",
     useCases: [
-      "Planning long-term savings through regular investments.",
-      "Understanding the power of compounding with monthly contributions.",
-      "Estimating future value of systematic investment plans."
+        "Accurate projections matching major mutual fund platforms.",
+        "Visualizing long-term wealth creation.",
+        "Planning for specific financial goals."
     ],
     definitions: [
-      { title: "Monthly Investment", desc: "The amount invested every month." },
-      { title: "Expected return(p.a.)", desc: "The anticipated annual growth rate of the investment." },
-      { title: "Time period", desc: "The duration over which investments are made." }
+        { title: "Monthly Investment", desc: "Fixed amount you invest every month." },
+        { title: "Effective Rate", desc: "The monthly rate required to achieve the target annual growth." }
     ]
-  },
+},
   "Mortgage Payment": {
     type: 'loan',
     label1: "Loan Amount", min1: 5000, max1: 1000000, step1: 1000, def1: 5000,
@@ -698,32 +698,25 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "SSY Calculator": {
     label1: "Yearly Investment", min1: 250, max1: 150000, step1: 5000, def1: 250,
-    label2: "Girl's Age", min2: 1, max2: 10, step2: 1, def2: 1,
+    label2: "Girl's Age", min2: 0, max2: 10, step2: 1, def2: 0,
     label3: "Start Year", min3: 2021, max3: 2030, step3: 1, def3: 2021,
 
     hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (yearly:number, age:number, startYear:number) => {
-  const rate = 0.085201075;   // 8.5201%
-
-  const maturityYears = 21 - age;
-  const depositYears = Math.max(0, 15 - age);
-
+  calculate: (yearly: number, age: number, startYear: number) => {
+  const rate = 0.085; // 8.5%
+  const depositYears = 15;
+  const maturityYears = 21;
   let balance = 0;
-  let totalInvested = 0;
-
+  let totalInvested = yearly * depositYears;
   for (let year = 1; year <= maturityYears; year++) {
     if (year <= depositYears) {
-      balance += yearly;
-      totalInvested += yearly;
+      balance += yearly; // deposit at start of year
     }
-
-    balance *= (1 + rate);
+    balance *= (1 + rate); // interest at end of year
   }
-
   const maturityValue = Math.round(balance);
   const totalInterest = maturityValue - totalInvested;
-
   return {
     totalValue: maturityValue,
     totalInvested,
@@ -731,7 +724,7 @@ const CALC_CONFIGS: Record<string, any> = {
     maturityValue,
     maturityYear: startYear + maturityYears,
     returnPercentage: +((totalInterest / totalInvested) * 100).toFixed(2),
-    ratio: (depositYears / 15) * 100  // Use deposit years as ratio for dynamic chart
+    ratio: (depositYears / maturityYears) * 100
   };
 },
     totalValueLabel: "MATURITY VALUE",
@@ -765,7 +758,7 @@ const CALC_CONFIGS: Record<string, any> = {
     hasFourthSlider: true,
     isV2Currency: true,
     isV4Currency: false,
-    calculate: (
+  calculate: (
   totalInvestment: number,
   withdrawPerMonth: number,
   expectedReturn: number,
@@ -773,33 +766,40 @@ const CALC_CONFIGS: Record<string, any> = {
 ) => {
   const monthlyRate = expectedReturn / 100 / 12;
   const totalMonths = timePeriodYears * 12;
-
+  
+  let currentBalance = totalInvestment;
   const totalWithdrawal = withdrawPerMonth * totalMonths;
 
-  const growthFactor = Math.pow(1 + monthlyRate, totalMonths);
+  for (let i = 0; i < totalMonths; i++) {
+    // 1. Withdrawal happens at the START of the month
+    currentBalance -= withdrawPerMonth;
+    
+    // 2. Interest is earned on the REMAINING balance
+    currentBalance += currentBalance * monthlyRate;
 
-  const finalValue =
-  totalInvestment * growthFactor -
-  withdrawPerMonth * ((growthFactor - 1) / monthlyRate);
+    // 3. If balance hits zero, stop
+    if (currentBalance < 0) {
+      currentBalance = 0;
+      break;
+    }
+  }
 
-
-  const estReturns =
-    totalWithdrawal + finalValue - totalInvestment;
+  const finalValue = Math.round(currentBalance);
+  const estReturns = totalWithdrawal + finalValue - totalInvestment;
 
   return {
     totalValue: Math.round(totalWithdrawal),
     totalInvested: totalInvestment,
-    finalValue: Math.max(0, Math.round(finalValue)),
+    finalValue: finalValue,
     estReturns: Math.round(estReturns),
-    returnPercentage:
-      ((estReturns / totalInvestment) * 100).toFixed(2),
+    returnPercentage: ((estReturns / totalInvestment) * 100).toFixed(2),
     years: timePeriodYears,
     ratio: (totalWithdrawal / totalInvestment).toFixed(2),
   };
 },
     totalValueLabel: "TOTAL WITHDRAWAL",
-    investedLabel: "Final value",
-    profitLabel: "Total Investment",
+    investedLabel: "Total Investment",
+    profitLabel: "Final value",
     formulaText: "This SWP calculator simulates monthly withdrawals from an investment with compound interest over a specified time period.",
     formulaLatex: "Balance = (Balance Ã— (1 + r)) - W",
     formulaVars: "Balance = Current balance, r = Monthly interest rate, W = Monthly withdrawal, Time period = Specified years",
@@ -1048,36 +1048,36 @@ const CALC_CONFIGS: Record<string, any> = {
     hasFourthSlider: true,
     hasFifthSlider: true,
     isV2Currency: false,
-   calculate: (
-  monthlySalary = 0,
-  age = 18,
+  calculate: (
+  monthlySalary = 30000,
+  age = 25,
   contributionPercent = 12,
-  annualIncreasePercent = 0,
+  annualIncreasePercent = 5,
   interestRate = 8.25
 ) => {
-  const yearsToRetirement = Math.max(0, 60 - age);
-  const months = yearsToRetirement * 12;
-  
-  const monthlyRate = interestRate / 100 / 12;
+  const yearsToRetirement = 60 - age;
   const annualIncreaseRate = annualIncreasePercent / 100;
+  const r = interestRate / 100;
 
   let balance = 0;
   let totalInvested = 0;
   let currentSalary = monthlySalary;
 
-  for (let month = 1; month <= months; month++) {
-    // Add monthly contribution FIRST (employee + employer)
-    const monthlyContribution = (currentSalary * contributionPercent * 2) / 100;
-    balance += monthlyContribution;
-    totalInvested += monthlyContribution;
-    
-    // Then apply interest on the updated balance
-    balance = balance * (1 + monthlyRate);
+  for (let year = 1; year <= yearsToRetirement; year++) {
+    // 1. Calculate Monthly Contribution 
+    // Uses the flat 15.67% rule (12% Employee + 3.67% Employer)
+    const monthlyContribution = (currentSalary * (contributionPercent + 3.67)) / 100;
+    const yearlyContribution = monthlyContribution * 12;
 
-    // Increase salary at the END of each year
-    if (month % 12 === 0) {
-      currentSalary *= (1 + annualIncreaseRate);
-    }
+    // 2. The Groww/Industry Formula: 
+    // Closing Balance = (Opening Balance + Yearly Contribution) * (1 + Interest Rate)
+    // This effectively gives full-year interest on the current year's contributions.
+    balance = (balance + yearlyContribution) * (1 + r);
+    
+    totalInvested += yearlyContribution;
+
+    // 3. Apply salary hike for the next year
+    currentSalary *= (1 + annualIncreaseRate);
   }
 
   const estReturns = balance - totalInvested;
@@ -1094,7 +1094,6 @@ const CALC_CONFIGS: Record<string, any> = {
     interestRate
   };
 },
-
     totalValueLabel: "ACCUMULATED BY RETIREMENT",
     gainLabel: "RETURN %",
     investedLabel: "Monthly Salary",
@@ -1201,67 +1200,64 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Shares", desc: "The total number of shares owned." }
     ]
   },
-  "HRA Calculator": {
-    label1: "Basic salary(p.a.)", min1: 100000, max1: 10000000, step1: 10000, def1: 500000,
-    label2: "Dearness allowance(p.a.)", min2: 0, max2: 1000000, step2: 10000, def2: 0,
-    label3: "HRA received(p.a.)", min3: 0, max3: 1000000, step3: 10000, def3: 100000,
-    label4: "Total rent(p.a.)", min4: 0, max4: 2000000, step4: 10000, def4: 120000,
+  "Salary Calculator": {
+    label1: "Cost to Company (CTC)", min1: 100000, max1: 50000000, step1: 10000, def1: 600000,
+    label2: "Bonus Value (%)", min2: 0, max2: 100, step2: 0.1, def2: 10,
+    label3: "Monthly Professional Tax", min3: 0, max3: 5000, step3: 50, def3: 235,
+    label4: "Monthly Employer PF", min4: 0, max4: 15000, step4: 100, def4: 1800,
+    label5: "Monthly Employee PF", min5: 0, max5: 15000, step5: 100, def5: 1800,
     hasThirdSlider: true,
     hasFourthSlider: true,
+    hasFifthSlider: true,
     isV2Currency: false,
-  calculate: (
-  basicSalary: number,
-  da: number,
-  hraReceived: number,
-  rentPaid: number,
-  isMetro: boolean
-) => {
-  const salaryForHRA = basicSalary + da;
+    calculate: (ctc: number, bonusPercent: number, profTax: number, employerPf: number, employeePf: number) => {
+  const monthlyCTC = ctc / 12;
+  
+  // 1. Monthly Bonus (Part of CTC but not in monthly take-home)
+  const monthlyBonusComponent = (monthlyCTC * bonusPercent) / 100;
 
-  const hraLimit = isMetro
-    ? 0.5 * salaryForHRA
-    : 0.4 * salaryForHRA;
-
-  const rentMinusTenPercent =
-    rentPaid > 0
-      ? Math.max(0, rentPaid - 0.1 * salaryForHRA)
-      : 0;
-
-  const exemptedHRA = Math.min(
-    hraReceived,
-    hraLimit,
-    rentMinusTenPercent
-  );
-
-  const taxableHRA = Math.max(0, hraReceived - exemptedHRA);
+  // 2. Take Home Monthly
+  // Subtract everything that isn't cash-in-hand: Employer PF, Employee PF, Prof Tax, and the Bonus portion
+  const takeHomeMonthly = monthlyCTC - employerPf - employeePf - profTax - monthlyBonusComponent;
+  
+  // 3. Total Monthly Deductions
+  // This must equal: (Monthly CTC - Take Home Monthly)
+  const totalMonthlyDeductions = monthlyCTC - takeHomeMonthly;
+  
+  // 4. Annual Values
+  const takeHomeAnnual = takeHomeMonthly * 12;
+  const totalAnnualDeductions = totalMonthlyDeductions * 12;
 
   return {
-    totalValue: Math.round(exemptedHRA),   // Exempted HRA
-    totalInvested: Math.round(taxableHRA), // Taxable HRA
-    estReturns: Math.round(salaryForHRA),  // Basic + DA
+    totalValue: Math.round(takeHomeMonthly),
+    takeHomeAnnual: Math.round(takeHomeAnnual),
+    totalMonthlyDeductions: Math.round(totalMonthlyDeductions),
+    totalAnnualDeductions: Math.round(totalAnnualDeductions),
+    monthlySalary: Math.round(monthlyCTC - employerPf - monthlyBonusComponent), // This is Gross Salary
+    ctc: Math.round(ctc),
     returnPercentage: 0,
     ratio: 0
   };
 },
-    totalValueLabel: "Taxable HRA",
+    totalValueLabel: "TAKE HOME MONTHLY SALARY",
     gainLabel: "",
-    investedLabel: "Exempted HRA",
-    profitLabel: "Basic + DA",
-    formulaText: "This HRA calculator computes taxable and exempted House Rent Allowance based on salary, allowances, and rent paid:",
-    formulaLatex: "Exempted HRA = min(HRA Received, Rent Paid - 10% Basic, 50% Basic (Metro) / 40% Basic (Non-Metro))",
-    formulaVars: "Taxable HRA = HRA Received - Exempted HRA, Basic Salary = Basic + DA",
+    investedLabel: "Take Home Annual Salary",
+    profitLabel: "Total Monthly Deductions",
+    formulaText: "This salary calculator computes take-home salary by deducting employee PF and professional tax from CTC plus bonus percentage.",
+    formulaLatex: "Take Home Monthly = ((CTC + (CTC \\times Bonus \\% / 100)) / 12) - (Professional Tax + Employee PF)",
+    formulaVars: "CTC = Cost to Company (annual), Bonus % = Bonus percentage of CTC, Professional Tax = Monthly deduction, Employee PF = Monthly deduction",
     useCases: [
-      "Calculating tax-exempt HRA for salaried employees.",
-      "Understanding HRA exemption limits based on city type.",
-      "Planning rent payments to maximize tax benefits."
+      "Calculating net salary after deductions including bonus percentage.",
+      "Planning personal finances based on CTC with bonus incentives.",
+      "Understanding monthly and annual take-home pay with percentage-based bonuses."
     ],
     definitions: [
-      { title: "Basic salary(p.a.)", desc: "Annual basic salary component." },
-      { title: "Dearness allowance(p.a.)", desc: "Annual dearness allowance component." },
-      { title: "HRA received(p.a.)", desc: "Annual House Rent Allowance received from employer." },
-      { title: "Total rent(p.a.)", desc: "Annual rent paid for accommodation." },
-      { title: "Taxable HRA", desc: "Portion of HRA that is taxable." },
-      { title: "Exempted HRA", desc: "Portion of HRA that is tax-exempt." }
+      { title: "Cost to Company (CTC)", desc: "The total cost of employment to the company, including base salary and benefits." },
+      { title: "Bonus Value (%)", desc: "The bonus percentage of CTC added to total compensation." },
+      { title: "Professional Tax", desc: "Monthly tax deducted based on salary slabs." },
+      { title: "Employer PF", desc: "Monthly contribution by employer to Provident Fund (not deducted from employee salary)." },
+      { title: "Employee PF", desc: "Monthly contribution by employee to Provident Fund." },
+      { title: "Take Home Salary", desc: "Net salary received after deductions." }
     ]
   },
 };
@@ -1271,14 +1267,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
 
-  const [v1, setV1] = useState<string>(String(config.min1));
-  const [v2, setV2] = useState<string>(String(config.min2));
-  const [v3, setV3] = useState<string>(String(config.min3 || 0));
-  const [v4, setV4] = useState<string>(String(config.min4 || 0));
+  const [v1, setV1] = useState<string>(String(config.def1 || config.min1));
+  const [v2, setV2] = useState<string>(String(config.def2 || config.min2));
+  const [v3, setV3] = useState<string>(String(config.def3 || config.min3 || 0));
+  const [v4, setV4] = useState<string>(String(config.def4 || config.min4 || 0));
+  const [v5, setV5] = useState<string>(String(config.def5 || config.min5 || 0));
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
-  const [isMetro, setIsMetro] = useState(true); // default to metro for HRA
+
   const [frequency, setFrequency] = useState(2); // default half-yearly
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -1306,17 +1303,30 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     { buyPrice: '0', quantity: '0' }
   ]);
 
+
+
+  // Set defaults on mount
+  useEffect(() => {
+    setV1(String(config.def1 || config.min1));
+    setV2(String(config.def2 || config.min2));
+    setV3(String(config.def3 || config.min3 || 0));
+    setV4(String(config.def4 || config.min4 || 0));
+    setV5(String(config.def5 || config.min5 || 0));
+  }, [config]);
+
   // Calculation
   const val1 = Number(v1) || (config.def1 || config.min1);
   const val2 = Number(v2) || (config.def2 || config.min2);
   const val3 = Number(v3) || (config.def3 || config.min3 || 0);
   const val4 = Number(v4) || (config.def4 || config.min4 || 0);
+  const val5 = Number(v5) || (config.def5 || config.min5 || 0);
 
   // Calculate percentages for dynamic slider fills
   const percentage1 = config.min1 !== config.max1 ? ((val1 - config.min1) / (config.max1 - config.min1)) * 100 : 0;
   const percentage2 = config.min2 !== config.max2 ? ((val2 - config.min2) / (config.max2 - config.min2)) * 100 : 0;
   const percentage3 = config.min3 !== config.max3 ? ((val3 - config.min3) / (config.max3 - config.min3)) * 100 : 0;
   const percentage4 = config.min4 !== config.max4 ? ((val4 - config.min4) / (config.max4 - config.min4)) * 100 : 0;
+  const percentage5 = config.min5 !== config.max5 ? ((val5 - config.min5) / (config.max5 - config.min5)) * 100 : 0;
 
   // Dynamic slider styles based on theme and slider index
   const getSliderStyle = (percentage: number, sliderIndex: number = 0) => {
@@ -1330,8 +1340,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   let results: any = {};
   if (calc?.title === "Stock Average Calculator") {
     results = config.calculate(shares);
-  } else if (calc?.title === "HRA Calculator") {
-    results = config.calculate(val1, val2, val3, val4, isMetro);
+  } else if (calc?.title === "Salary Calculator") {
+    results = config.calculate(val1, val2, val3, val4, val5);
   } else if (config.hasFourthSlider) {
     results = config.calculate(val1, val2, val3, val4);
   } else if (config.hasThirdSlider) {
@@ -1567,12 +1577,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
-                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
-                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
+                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
+                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
                     </div>
                   </>
                 )}
               </div>
+
+
+
+
 
               {/* Fixed Time Period for NSC Calculator */}
               {calc?.title === "NSC Calculator" && (
@@ -1649,7 +1663,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         </div>
                       ) : (
                         calc?.title !== "NSC Calculator" && <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
-                          {calc?.title === "HRA Calculator" && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
+                          {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                           <input
                             type="number"
                             min={config.min3}
@@ -1664,7 +1678,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             }}
                             className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                           />
-                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
+                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && calc?.title !== "Salary Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
                         </div>
                       )}
                     </div>
@@ -1696,7 +1710,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label4}</label>
                     <div className="flex items-center bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg font-black text-sm border border-purple-100 dark:border-purple-800/50">
-                      {calc?.title === "HRA Calculator" && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
+                      {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                       <input
                         type="number"
                         min={config.min4}
@@ -1711,7 +1725,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         }}
                         className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                       />
-                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
+                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
                     </div>
                   </div>
                   <input
@@ -1731,46 +1745,55 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 </div>
               )}
 
-              {/* Metro/Non-Metro Toggle for HRA Calculator */}
-              {calc?.title === "HRA Calculator" && (
-                <div className="mt-4">
-                  {/* <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 block"></label> */}
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="cityType"
-                        value="metro"
-                        checked={isMetro}
-                        onChange={() => setIsMetro(true)}
-                        className="text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Metro</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="cityType"
-                        value="non-metro"
-                        checked={!isMetro}
-                        onChange={() => setIsMetro(false)}
-                        className="text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Non-Metro</span>
-                    </label>
-                  </div>
-                </div>
-              )}
 
-              {/* Fifth Input (for EPF) */}
+
+              {/* Fifth Input (for EPF, Salary Calculator) */}
               {config.hasFifthSlider && (
                 <div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label5}</label>
                     <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg font-black text-sm border border-orange-100 dark:border-orange-800/50">
-                      <span className="text-right">{config.def5}%</span>
+                      {calc?.title === "EPF Calculator" ? (
+                        <span className="text-right">{config.def5}%</span>
+                      ) : (
+                        <>
+                          <span className="mr-1">{isINR ? '₹' : '$'}</span>
+                          <input
+                            type="number"
+                            min={config.min5}
+                            max={config.max5}
+                            value={v5}
+                            onChange={(e) => setV5(e.target.value)}
+                            onBlur={(e) => {
+                              const val = Number(e.target.value);
+                              if (val < config.min5) setV5(String(config.min5));
+                              else if (val > config.max5) setV5(String(config.max5));
+                              else setV5(e.target.value);
+                            }}
+                            className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
+                  {config.min5 !== config.max5 && calc?.title !== "EPF Calculator" && (
+                    <>
+                      <input
+                        type="range"
+                        min={config.min5}
+                        max={config.max5}
+                        step={config.step5}
+                        value={v5}
+                        onChange={(e) => setV5(e.target.value)}
+                        style={getSliderStyle(percentage5, 4)}
+                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-orange-600"
+                      />
+                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                        <span>{config.min5.toLocaleString()}</span>
+                        <span>{config.max5.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -1952,21 +1975,28 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black text-blue-600">{results.annualIncreasePercent}%</span>
                     </div>
                   </>
-                ) : calc?.title === "HRA Calculator" ? (
+                ) : calc?.title === "Salary Calculator" ? (
                   <>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
+                        <span className="text-xs font-bold text-slate-500">Take Home Annual Salary</span>
                       </div>
-                      <span className="text-sm font-black text-blue-600">{formatCurrency(totalInvested)}</span>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(results.takeHomeAnnual)}</span>
                     </div>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-slate-300" />
-                        <span className="text-xs font-bold text-slate-500">{dynamicConfig.profitLabel}</span>
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-xs font-bold text-slate-500">Total Monthly Deductions</span>
                       </div>
-                      <span className="text-sm font-black">{formatCurrency(estReturns)}</span>
+                      <span className="text-sm font-black text-green-600">{formatCurrency(results.totalMonthlyDeductions)}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <span className="text-xs font-bold text-slate-500">Total Annual Deductions</span>
+                      </div>
+                      <span className="text-sm font-black text-purple-600">{formatCurrency(results.totalAnnualDeductions)}</span>
                     </div>
                   </>
                 ) : (
@@ -1979,7 +2009,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       <span className="text-sm font-black text-blue-600">
                         {formatCurrency(
                           calc?.title === "Mutual Funds Returns" ? totalInvested :
-                          calc?.title === "SIP Calculator" || calc?.title === "RD Calculator" ? totalValue :
+                          calc?.title === "SIP Calculator" ? estReturns :
+                          calc?.title === "RD Calculator" ? totalValue :
                           calc?.title === "Compound Interest" ? totalInvested :
                           calc?.title === "FD Calculator" ? totalInvested :
                           calc?.title === "Lumpsum Calculator" ? totalInvested :
@@ -1987,6 +2018,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           calc?.title === "Post Office MIS Calculator" ? totalInvested :
                           calc?.title === "PPF Calculator" ? maturityValue :
                           calc?.title === "Simple Interest" ? totalInvested :
+                          calc?.title === "SWP Calculator" ? totalInvested :
                           estReturns
                         )}
                       </span>
@@ -2002,7 +2034,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
                           calc?.title === "Simple Interest" ? estReturns :
                           calc?.title === "Compound Interest" ? totalInvested :
-                          calc?.title === "SIP Calculator" || calc?.title === "Lumpsum Calculator" ? estReturns :
+                          calc?.title === "SIP Calculator" ? totalInvested :
+                          calc?.title === "Lumpsum Calculator" ? estReturns :
                           calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment" || calc?.title === "Loan Amortization" ? finalAmount :
                           calc?.title === "SWP Calculator" ? results.finalValue :
                           calc?.title === "Inflation Calculator" ? estReturns :
