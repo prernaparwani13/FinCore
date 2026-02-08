@@ -703,20 +703,38 @@ const CALC_CONFIGS: Record<string, any> = {
 
     hasThirdSlider: true,
     isV2Currency: false,
-  calculate: (yearly: number, age: number, startYear: number) => {
-  const rate = 0.085; // 8.5%
+    calculate: (yearly: number, age: number, startYear: number) => {
+  const annualRate = 0.082;
+  const monthlyRate = annualRate / 12;
+
   const depositYears = 15;
   const maturityYears = 21;
+
   let balance = 0;
   let totalInvested = yearly * depositYears;
+
   for (let year = 1; year <= maturityYears; year++) {
+    // 1️⃣ Deposit at START of the year (only first 15 years)
     if (year <= depositYears) {
-      balance += yearly; // deposit at start of year
+      balance += yearly;
     }
-    balance *= (1 + rate); // interest at end of year
+
+    // 2️⃣ Calculate monthly interest but DO NOT compound monthly
+    let yearlyInterest = 0;
+    for (let month = 1; month <= 12; month++) {
+      yearlyInterest += balance * monthlyRate;
+    }
+
+    // 3️⃣ Credit interest ONCE per year
+    balance += yearlyInterest;
+
+    // 4️⃣ Yearly rounding (VERY IMPORTANT)
+    balance = Math.round(balance);
   }
-  const maturityValue = Math.round(balance);
+
+  const maturityValue = balance;
   const totalInterest = maturityValue - totalInvested;
+
   return {
     totalValue: maturityValue,
     totalInvested,
@@ -724,9 +742,10 @@ const CALC_CONFIGS: Record<string, any> = {
     maturityValue,
     maturityYear: startYear + maturityYears,
     returnPercentage: +((totalInterest / totalInvested) * 100).toFixed(2),
-    ratio: (depositYears / maturityYears) * 100
+    ratio: +((totalInterest / totalInvested) * 100).toFixed(2)
   };
 },
+
     totalValueLabel: "MATURITY VALUE",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
@@ -747,6 +766,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Interest", desc: "Total interest earned on the investment." },
       { title: "Maturity Year", desc: "The year when the account matures (at age 21)." },
       { title: "Maturity Value", desc: "The total amount available at maturity." }
+  
     ]
   },
   "SWP Calculator": {
@@ -1333,8 +1353,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
   // Dynamic slider styles based on theme and slider index
   const getSliderStyle = (percentage: number, sliderIndex: number = 0) => {
-    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']; // blue, green, purple, amber
-    const fillColor = colors[sliderIndex] || '#3b82f6';
+    const fillColor = '#3b82f6'; // blue for all sliders
     return {
       background: `linear-gradient(to right, ${fillColor} 0%, ${fillColor} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} 100%)`
     };
@@ -1403,7 +1422,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-10 gap-4 mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 md:mb-3 gap-4 mt-5">
           <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={onBack} 
@@ -1502,7 +1521,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <>
                   {/* First Input */}
                   <div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 -mt-1">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-4">
                       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
                       <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                         <span className="mr-1">{isINR ? '₹' : '$'}</span>
@@ -1534,7 +1553,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           style={getSliderStyle(percentage1, 0)}
                           className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
                         />
-                        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
                           <span>{config.min1.toLocaleString()}</span>
                           <span>{config.max1.toLocaleString()}</span>
                         </div>
@@ -1546,9 +1565,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
               {/* Second Input */}
               <div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center  -mb-1 mt-3">
                   <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label2}</label>
-                  <div className="flex items-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-lg font-black text-sm border border-emerald-100 dark:border-emerald-800/50">
+                  <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                     {(config.isV2Currency || calc?.title === "HRA Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                     <input
                       type="number"
@@ -1577,9 +1596,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       value={v2}
                       onChange={(e) => setV2(e.target.value)}
                       style={getSliderStyle(percentage2, 1)}
-                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
                     />
-                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
                       <span>{config.min2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
                       <span>{config.max2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
                     </div>
@@ -1644,7 +1663,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         <select
                           value={timeUnit}
                           onChange={(e) => setTimeUnit(e.target.value)}
-                          className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
+                          className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold border border-blue-100 dark:border-blue-800/50"
                         >
                           <option value="Years">Years</option>
                           <option value="Months">Months</option>
@@ -1661,11 +1680,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         </select>
                       )}
                       {calc?.title === "PPF Calculator" ? (
-                        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                           <span className="text-right">7.1%</span>
                         </div>
                       ) : (
-                        calc?.title !== "NSC Calculator" && <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-lg font-black text-sm border border-indigo-100 dark:border-indigo-800/50">
+                        calc?.title !== "NSC Calculator" && <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                           {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                           <input
                             type="number"
@@ -1696,9 +1715,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         value={v3}
                         onChange={(e) => setV3(e.target.value)}
                         style={getSliderStyle(percentage3)}
-                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
                       />
-                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
                         <span>{config.min3}</span>
                         <span>{config.max3}</span>
                       </div>
@@ -1712,7 +1731,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label4}</label>
-                    <div className="flex items-center bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-3 py-2 rounded-lg font-black text-sm border border-purple-100 dark:border-purple-800/50">
+                    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                       {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
                       <input
                         type="number"
@@ -1739,9 +1758,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     value={v4}
                     onChange={(e) => setV4(e.target.value)}
                     style={getSliderStyle(percentage4)}
-                    className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-600"
+                    className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
                   />
-                  <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                  <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
                     <span>{calc?.title === "HRA Calculator" ? config.min4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.min4}%` : `${config.min4} Yr`}</span>
                     <span>{calc?.title === "HRA Calculator" ? config.max4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.max4}%` : `${config.max4} Yrs`}</span>
                   </div>
@@ -1753,9 +1772,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               {/* Fifth Input (for EPF, Salary Calculator) */}
               {config.hasFifthSlider && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-4">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label5}</label>
-                    <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-3 py-2 rounded-lg font-black text-sm border border-orange-100 dark:border-orange-800/50">
+                    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                       {calc?.title === "EPF Calculator" ? (
                         <span className="text-right">{config.def5}%</span>
                       ) : (
@@ -1789,9 +1808,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         value={v5}
                         onChange={(e) => setV5(e.target.value)}
                         style={getSliderStyle(percentage5, 4)}
-                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-orange-600"
+                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
                       />
-                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-2 uppercase">
+                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
                         <span>{config.min5.toLocaleString()}</span>
                         <span>{config.max5.toLocaleString()}</span>
                       </div>
@@ -1834,15 +1853,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               </div>
 
               {/* Currency Toggle */}
-              <div className="w-full space-y-1">
-                <div className="flex justify-end">
+              <div className="flex justify-end">
                   <button
                     onClick={() => setIsINR(!isINR)}
-                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-12"
+                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-4"
                   >
                     {isINR ? 'USD ($)' : 'INR (₹)'}
                   </button>
                 </div>
+              <div className="w-full space-y-1">
+                
                 
                 {/* Conditional rendering based on calculator type */}
                 {calc?.title === "Stock Average Calculator" ? (
@@ -1996,10 +2016,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     </div>
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Total Annual Deductions</span>
                       </div>
-                      <span className="text-sm font-black text-purple-600">{formatCurrency(results.totalAnnualDeductions)}</span>
+                        <span className="text-sm font-black text-blue-600">{formatCurrency(results.totalAnnualDeductions)}</span>
                     </div>
                   </>
                 ) : (

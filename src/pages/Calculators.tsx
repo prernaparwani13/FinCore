@@ -84,7 +84,7 @@ const Calculators = () => {
               ) : (
                 <div className="flex flex-col gap-4">
                   {filteredData.map((item) => (
-                    <CalculatorListItem key={item.title} {...item} onClick={() => { navigate(`/calculator/${encodeURIComponent(item.title)}`); setLastSelectedCalc(item); }} />
+                    <CalculatorListItem key={item.title} {...item} onClick={() => { navigate(`/calculator/${encodeURIComponent(item.title)}`); setLastSelectedCalc(item); localStorage.setItem('lastSelectedCalc', JSON.stringify(item)); }} />
                   ))}
                 </div>
               )

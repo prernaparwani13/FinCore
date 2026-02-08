@@ -95,12 +95,12 @@ const headingToCalcTitle: { [key: string]: string } = {
           <p className="text-slate-500 dark:text-slate-300 text-lg">Explore the calculators tailored for you.</p>
         </section>
         <section className={`max-w-[1500px] mx-auto px-4 ${selectedCalculator ? 'mb-8' : 'mb-32'}`}>
-          <div className="flex justify-center gap-3 mr-20">
+          <div className="flex justify-start gap-3 mr-2">
             {headings.map((heading, i) => (
               <div
                 key={i}
                 onClick={() => handleCalculatorClick(heading)}
-                className={`px-4 md:px-4 py-2.5  rounded-full text-sm font-bold cursor-pointer transition-all  ${
+                className={`${category === 'investors' ? 'flex items-center justify-center w-50 h-13' : 'w-40'} px-4 md:px-4 py-2.5  rounded-full text-sm font-bold cursor-pointer transition-all  ${
                   selectedCalculator === headingToCalcTitle[heading]
                     ? 'bg-blue-100 dark:bg-blue-600 text-white shadow-lg hover:bg-slate-100 dark:hover:bg-blue-200'
                     : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-white border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-500'
