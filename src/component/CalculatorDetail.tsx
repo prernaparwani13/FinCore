@@ -6,8 +6,13 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 
+interface Calc {
+  title: string;
+  category?: string;
+}
+
 interface Props {
-  calc?: any;
+  calc?: Calc;
   onBack: () => void;
   showNavbar?: boolean;
 }
@@ -134,7 +139,7 @@ const CALC_CONFIGS: Record<string, any> = {
     type: 'loan',
     label1: "Loan Amount", min1: 5000, max1: 1000000, step1: 1000, def1: 5000,
     label2: "Interest Rate", min2: 0.1, max2: 15, step2: 0.1, def2: 0.1,
-    label3: "Loan Term", min3: 1, max3: 30, step3: 1, def3: 30,
+    label3: "Loan Term", min3: 1, max3: 30, step3: 1, def3: 1,
     hasThirdSlider: true,
     isV2Currency: false,
     calculate: (loanAmount: number, rate: number, termYears: number) => {
@@ -1027,8 +1032,8 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "Gratuity Calculator": {
-    label1: "Monthly Salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 30000,
-    label2: "Years of Service", min2: 1, max2: 30, step2: 1, def2: 5,
+    label1: "Monthly Salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 10000,
+    label2: "Years of Service", min2: 1, max2: 30, step2: 1, def2: 1,
     hasThirdSlider: false,
     isV2Currency: false,
     calculate: (monthlySalary: number, years: number) => {
@@ -1061,10 +1066,10 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "EPF Calculator": {
-    label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 30000,
-    label2: "Your age", min2: 15, max2: 58, step2: 1, def2: 25,
-    label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 12,
-    label4: "Annual increase in salary (%)", min4: 1, max4: 15, step4: 0.5, def4: 5,
+    label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 10000,
+    label2: "Your age", min2: 15, max2: 58, step2: 1, def2: 15,
+    label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 1,
+    label4: "Annual increase in salary (%)", min4: 1, max4: 15, step4: 0.5, def4: 1,
     label5: "Rate of interest (%)", min5: 8.25, max5: 8.25, step5: 0.01, def5: 8.25,
     hasThirdSlider: true,
     hasFourthSlider: true,
@@ -1139,9 +1144,9 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "NSC Calculator": {
-    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 1000,
-    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 6.8,
-    label3:"Compounding Frequency", options3: ["Half-yearly"], def3: "Half-yearly",
+    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 100,
+    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 1,
+    label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
     hasThirdSlider: true,
     isV2Currency: false,
     calculate: (amountInvested: number, rate: number) => {
@@ -1451,6 +1456,37 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             </div>
 
             <div className="space-y-1 sm:space-y-1">
+              {/* GST Mode Radio Buttons */}
+              {calc?.title === "GST Calculator" && (
+                <div className="mt-4">
+                  <label className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2  mr-138  block">GST Mode</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gstMode"
+                        value="exclusive"
+                        checked={gstMode === 'exclusive'}
+                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Exclusive</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gstMode"
+                        value="inclusive"
+                        checked={gstMode === 'inclusive'}
+                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Inclusive</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {/* Stock Average Calculator Custom UI */}
               {calc?.title === "Stock Average Calculator" ? (
                 <div className="space-y-4">
@@ -1521,7 +1557,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <>
                   {/* First Input */}
                   <div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-2">
                       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
                       <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
                         <span className="mr-1">{isINR ? '₹' : '$'}</span>
@@ -1618,37 +1654,6 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     <div className="flex items-center bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-lg font-black text-sm border border-gray-100 dark:border-gray-800/50">
                       <span className="text-right">5 Years</span>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* GST Mode Radio Buttons */}
-              {calc?.title === "GST Calculator" && (
-                <div className="mt-4">
-                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 block">GST Mode</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="gstMode"
-                        value="exclusive"
-                        checked={gstMode === 'exclusive'}
-                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
-                        className="text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Exclusive</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="gstMode"
-                        value="inclusive"
-                        checked={gstMode === 'inclusive'}
-                        onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
-                        className="text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Inclusive</span>
-                    </label>
                   </div>
                 </div>
               )}
@@ -1856,10 +1861,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <div className="flex justify-end">
                   <button
                     onClick={() => setIsINR(!isINR)}
-                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-4"
+                    className="px-4 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-4 ml-88"
                   >
                     {isINR ? 'USD ($)' : 'INR (₹)'}
-                  </button>
+                  </button> 
                 </div>
               <div className="w-full space-y-1">
                 
