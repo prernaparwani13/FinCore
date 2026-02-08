@@ -3,8 +3,8 @@
 
 const CALC_CONFIGS = {
   "Post Office MIS Calculator": {
-    label1: "Invested Amount", min1: 1000, max1: 450000, step1: 1000, def1: 10000,
-    label2: "Interest Rate", min2: 6.6, max2: 7.4, step2: 0.1, def2: 6.6,
+    label1: "Invested Amount", min1: 1000, max1: 450000, step1: 1000, def1: 1000,
+    label2: "Interest Rate", min2: 1, max2: 12, step2: 0.1, def2: 1,
     hasThirdSlider: false,
     isV2Currency: false,
     calculate: (principal, rate) => {

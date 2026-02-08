@@ -19,9 +19,9 @@ interface Props {
 
 const CALC_CONFIGS: Record<string, any> = {
   "SIP Calculator": {
-    label1: "Monthly Investment", min1: 100, max1: 100000, step1: 100, def1: 5000,
-    label2: "Expected return(p.a.)", min2: 1, max2: 30, step2: 0.1, def2: 12,
-    label3: "Time period", min3: 1, max3: 40, step3: 1, def3: 10,
+    label1: "Monthly Investment", min1: 100, max1: 100000, step1: 100, def1: 100,
+    label2: "Expected return(p.a.)", min2: 1, max2: 30, step2: 0.1, def2: 1,
+    label3: "Time period", min3: 1, max3: 40, step3: 1, def3: 1,
     hasThirdSlider: true,
     isV2Currency: false,
 
@@ -776,9 +776,9 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "SWP Calculator": {
     label1: "Total Investment", min1: 10000, max1: 10000000, step1: 1000, def1: 10000,
-    label2: "Withdraw per month", min2: 500, max2: 50000, step2: 500, def2: 1000,
-    label3: "Expected return rate", min3: 0, max3: 30, step3: 0.5, def3: 5,
-    label4: "Time period", min4: 5, max4: 30, step4: 1, def4: 10,
+    label2: "Withdraw per month", min2: 500, max2: 50000, step2: 500, def2: 500,
+    label3: "Expected return rate", min3: 0, max3: 30, step3: 0.5, def3: 0,
+    label4: "Time period", min4: 5, max4: 30, step4: 1, def4: 5,
     hasThirdSlider: true,
     hasFourthSlider: true,
     isV2Currency: true,
@@ -989,8 +989,8 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "Post Office MIS Calculator": {
-    label1: "Invested Amount", min1: 1000, max1: 450000, step1: 1000, def1: 10000,
-    label2: "Interest Rate", min2: 1, max2: 12, step2: 0.1, def2: 6.6,
+    label1: "Invested Amount", min1: 1000, max1: 450000, step1: 1000, def1: 1000,
+    label2: "Interest Rate", min2: 1, max2: 12, step2: 0.1, def2: 1,
     label3: "Lock in period", min3: 5, max3: 5, step3: 1, def3: 5,
     hasThirdSlider: true,
     isV2Currency: false,
@@ -1014,7 +1014,7 @@ const CALC_CONFIGS: Record<string, any> = {
     },
     totalValueLabel: "MONTHLY Income",
     gainLabel: "INTEREST RATE %",
-    investedLabel: "Total Investment",
+    investedLabel: "Interest Rate",
     profitLabel: "Invested Amount",
     formulaText: "This Post Office MIS calculator calculates monthly income based on invested amount and interest rate:",
     formulaLatex: "Monthly Income = (Principal Ã— Rate) Ã· 12",
@@ -1229,11 +1229,11 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "Salary Calculator": {
-    label1: "Cost to Company (CTC)", min1: 100000, max1: 50000000, step1: 10000, def1: 600000,
-    label2: "Bonus Value (%)", min2: 0, max2: 100, step2: 0.1, def2: 10,
-    label3: "Monthly Professional Tax", min3: 0, max3: 5000, step3: 50, def3: 235,
-    label4: "Monthly Employer PF", min4: 0, max4: 15000, step4: 100, def4: 1800,
-    label5: "Monthly Employee PF", min5: 0, max5: 15000, step5: 100, def5: 1800,
+    label1: "Cost to Company (CTC)", min1: 100000, max1: 50000000, step1: 10000, def1: 100000,
+    label2: "Bonus Value (%)", min2: 0, max2: 100, step2: 0.1, def2: 0,
+    label3: "Monthly Professional Tax", min3: 0, max3: 5000, step3: 50, def3: 0,
+    label4: "Monthly Employer PF", min4: 0, max4: 15000, step4: 100, def4: 0,
+    label5: "Monthly Employee PF", min5: 0, max5: 15000, step5: 100, def5: 0,
     hasThirdSlider: true,
     hasFourthSlider: true,
     hasFifthSlider: true,
