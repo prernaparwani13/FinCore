@@ -1,7 +1,5 @@
-# TODO: Implement Calculator Card Visibility on Back Navigation
+# TODO List for Removing Icons from Calculator Cards
 
-## Steps to Complete:
-- [x] Edit `src/pages/Calculators.tsx` to save `lastSelectedCalc` to localStorage on click, load it on mount, and check for 'currentPage' === 'detail' to set `cameFromDetail`.
-- [x] Edit `src/pages/CalculatorDetailPage.tsx` to set 'currentPage' to 'detail' in localStorage on mount.
-- [x] Test navigation using both back button and browser back to ensure the card is visible.
-- [x] Undo changes as requested by user.
+- [x] Edit CalculatorCard.tsx to conditionally render icon only for "Auto Loan", "Mortgage Payment", and "Loan Amortization"
+- [x] Edit CalculatorListItem.tsx to conditionally render icon only for "Auto Loan", "Mortgage Payment", and "Loan Amortization"
+- [x] Run the development server to verify changes

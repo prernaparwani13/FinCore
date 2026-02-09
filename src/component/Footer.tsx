@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="w-full  bg-slate-100 dark:bg-black py-8 sm:py-14  border-t border-slate-100 dark:border-slate-900 transition-colors duration-300">
+    <footer className="w-full  bg-slate-100 dark:bg-black py-8 sm:py-8  border-t border-slate-100 dark:border-slate-900 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-8"> {/* Increased px-2 to px-4 for better mobile gutters */}
         
 

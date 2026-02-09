@@ -751,7 +751,7 @@ const CALC_CONFIGS: Record<string, any> = {
   };
 },
 
-    totalValueLabel: "MATURITY VALUE",
+    totalValueLabel: "QUARTERLY RECEIVABLE INTEREST",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
     profitLabel: "Total Interest",
@@ -942,31 +942,26 @@ const CALC_CONFIGS: Record<string, any> = {
     isV2Currency: false,
     calculate: (yearlyInvestment: number, tenure: number, rate: number) => {
   const P = Number(yearlyInvestment);
-  const years = Number(tenure); 
+  const years = Number(tenure);
   const annualRate = Number(rate) / 100;
-
   const quarters = years * 4;
-
   // Quarterly interest (simple interest)
   const quarterlyInterest = (P * annualRate) / 4;
-
   // Total interest over entire tenure
   const totalInterest = quarterlyInterest * quarters;
-
-  // Maturity value = Principal + total interest
+  // Quarterly receivable interest = (P * annualRate) / 4
   const maturityValue = P + totalInterest;
-
   return {
-    totalValue: Math.round(quarterlyInterest), // quarterly payout
+    totalValue: Math.round(quarterlyInterest), // quarterly receivable interest
     years: years,
     returnPercentage: +((totalInterest / P) * 100).toFixed(2),
     totalInvested: Math.round(P),
     estReturns: Math.round(totalInterest),
     maturityValue: Math.round(maturityValue),
+    quarterlyInterest: Math.round(quarterlyInterest),
     ratio: +((totalInterest / P) * 100).toFixed(2)
   };
 },
-
     totalValueLabel: "QUARTERLY RECEIVABLE INTEREST",
     gainLabel: "RETURN %",
     investedLabel: "Total Interest",
@@ -985,7 +980,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Rate of Interest", desc: "The fixed annual interest rate, set at 8.2%." },
       { title: "Quarterly Receivable Interest", desc: "The interest earned and receivable each quarter." },
       { title: "Total Interest", desc: "The total interest earned over the tenure." },
-      { title: "Maturity Value", desc: "The total value at the end of the tenure including principal and interest." }
+      { title: "Quarterly Receivable Interest", desc: "The interest earned and receivable each quarter." }
     ]
   },
   "Post Office MIS Calculator": {
@@ -1849,12 +1844,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     className={`transition-all duration-700 ease-in-out ${isAnimating ? 'animate-pulse' : ''}`}
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                    {dynamicConfig.gainLabel || "RETURN %"}
-                  </p>
-                  <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
-                </div>
+                {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      {dynamicConfig.gainLabel || "RETURN %"}
+                    </p>
+                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
+                  </div>
+                )}
               </div>
 
               {/* Currency Toggle */}
@@ -1923,9 +1920,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-xs font-bold text-slate-500">Maturity Value</span>
+                        <span className="text-xs font-bold text-slate-500">Quarterly Receivable Interest</span>
                       </div>
-                      <span className="text-sm font-black text-blue-600">{formatCurrency(maturityValue)}</span>
+                      <span className="text-sm font-black text-blue-600">{formatCurrency(results.quarterlyInterest)}</span>
                     </div>
                   </>
                 ) : calc?.title === "ROI Calculator" ? (
