@@ -1077,46 +1077,57 @@ const CALC_CONFIGS: Record<string, any> = {
   annualIncreasePercent = 5,
   interestRate = 8.25
 ) => {
-  const yearsToRetirement = 60 - age;
-  const annualIncreaseRate = annualIncreasePercent / 100;
-  const r = interestRate / 100;
+
+  const retirementAge = 60;
+  const years = retirementAge - age;
+
+  const annualIncrease = annualIncreasePercent / 100;
+  const annualRate = interestRate / 100;
 
   let totalInvested = 0;
-  let futureValue = 0;
+  let totalValue = 0;
   let currentSalary = monthlySalary;
 
-  for (let year = 0; year < yearsToRetirement; year++) {
-    // Monthly contribution (Employee % + 3.67% Employer)
-    const monthlyContribution = (currentSalary * (contributionPercent + 3.67)) / 100;
-    const yearlyContribution = monthlyContribution * 12;
-    
-    totalInvested += yearlyContribution;
-    
-    // Calculate how many years this contribution will compound
-    const yearsRemaining = yearsToRetirement - year;
-    
-    // Future value of this year's contribution
-    futureValue += yearlyContribution * Math.pow(1 + r, yearsRemaining);
+  for (let year = 0; year < years; year++) {
 
-    // Apply salary hike for the next year
-    currentSalary *= (1 + annualIncreaseRate);
+    const monthlyContribution =
+      (currentSalary * (contributionPercent + 3.67)) / 100;
+
+    const yearlyContribution = monthlyContribution * 12;
+
+    totalInvested += yearlyContribution;
+
+    // Add yearly contribution first
+    totalValue += yearlyContribution;
+
+    // Apply annual interest on total balance
+    totalValue *= (1 + annualRate);
+
+    // Increase salary for next year
+    currentSalary *= (1 + annualIncrease);
   }
 
-  const balance = futureValue;
-  const estReturns = balance - totalInvested;
+  const estReturns = totalValue - totalInvested;
 
   return {
-    totalValue: Math.round(balance),
+    totalValue: Math.round(totalValue),
     totalInvested: Math.round(totalInvested),
     estReturns: Math.round(estReturns),
-    returnPercentage: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
-    years: yearsToRetirement,
-    ratio: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
+    returnPercentage:
+      totalInvested > 0
+        ? +((estReturns / totalInvested) * 100).toFixed(2)
+        : 0,
+    years,
+    ratio:
+      totalInvested > 0
+        ? +((estReturns / totalInvested) * 100).toFixed(2)
+        : 0,
     monthlySalary,
     annualIncreasePercent,
     interestRate
   };
 },
+
     totalValueLabel: "ACCUMULATED BY RETIREMENT",
     gainLabel: "RETURN %",
     investedLabel: "Monthly Salary",
@@ -1596,27 +1607,48 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
               {/* Second Input */}
               <div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center  -mb-1 mt-3">
-                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label2}</label>
-                  <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                    {(config.isV2Currency || calc?.title === "HRA Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
-                    <input
-                      type="number"
-                      min={config.min2}
-                      max={config.max2}
-                      value={v2}
-                      onChange={(e) => setV2(e.target.value)}
-                      onBlur={(e) => {
-                        const val = Number(e.target.value);
-                        if (val < config.min2) setV2(String(config.min2));
-                        else if (val > config.max2) setV2(String(config.max2));
-                        else setV2(e.target.value);
-                      }}
-                      className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
-                    />
-                    {!config.isV2Currency && calc?.title !== "HRA Calculator" && <span className="ml-1">{calc?.title === "SSY Calculator" ? "yr" : calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%"}</span>}
-                  </div>
-                </div>
+                {calc?.title !== "Stock Average Calculator" && (
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-3">
+    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+      {config.label2}
+    </label>
+
+    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      
+      {(config.isV2Currency || calc?.title === "HRA Calculator") && (
+        <span className="mr-1">{isINR ? '₹' : '$'}</span>
+      )}
+
+      <input
+        type="number"
+        min={config.min2}
+        max={config.max2}
+        value={v2}
+        onChange={(e) => setV2(e.target.value)}
+        onBlur={(e) => {
+          const val = Number(e.target.value);
+          if (val < config.min2) setV2(String(config.min2));
+          else if (val > config.max2) setV2(String(config.max2));
+          else setV2(e.target.value);
+        }}
+        className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+      />
+
+      {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
+        <span className="ml-1">
+          {calc?.title === "SSY Calculator"
+            ? "yr"
+            : calc?.title === "Gratuity Calculator"
+            ? "YRS"
+            : calc?.title === "EPF Calculator"
+            ? "Yr"
+            : "%"}
+        </span>
+      )}
+    </div>
+  </div>
+)}
+
                 {config.min2 !== config.max2 && (
                   <>
                     <input
@@ -1847,9 +1879,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                      {dynamicConfig.gainLabel || "RETURN %"}
+{dynamicConfig.gainLabel || "RETURN" }
                     </p>
-                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
+                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}</p>
                   </div>
                 )}
               </div>

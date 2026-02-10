@@ -18,6 +18,7 @@ const CalculatorListItem: React.FC<CalculatorListItemProps> = ({
 }) => {
   return (
     <div
+      id={`card-${title.replace(/\s+/g, '-').toLowerCase()}`}
       className="group bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 md:p-6 border border-slate-100 dark:border-slate-800 hover:border-blue-500/30 hover:shadow-xl transition-all flex flex-col md:flex-row md:items-center md:justify-between cursor-pointer gap-4"
       onClick={onClick}
     >

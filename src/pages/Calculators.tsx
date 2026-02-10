@@ -39,6 +39,10 @@ const Calculators = () => {
       setCameFromDetail(true);
       localStorage.removeItem('cameFromDetail');
     }
+    const storedCalc = localStorage.getItem('lastSelectedCalc');
+    if (storedCalc) {
+      setLastSelectedCalc(JSON.parse(storedCalc));
+    }
   }, []);
 
   useEffect(() => {
@@ -78,7 +82,7 @@ const Calculators = () => {
               viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                   {filteredData.map((item) => (
-                    <CalculatorCard key={item.title} {...item} onClick={() => { navigate(`/calculator/${encodeURIComponent(item.title)}`); setLastSelectedCalc(item); }} />
+                    <CalculatorCard key={item.title} {...item} onClick={() => { navigate(`/calculator/${encodeURIComponent(item.title)}`); setLastSelectedCalc(item); localStorage.setItem('lastSelectedCalc', JSON.stringify(item)); }} />
                   ))}
                 </div>
               ) : (
