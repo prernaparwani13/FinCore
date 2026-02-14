@@ -430,7 +430,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Amount",
     profitLabel: "Total Interest",
     formulaText: "This auto loan calculator uses the standard loan payment formula:",
-    formulaLatex: "M = P [ i(1 + i)^n ] / [ (1 + i)^n â€“ 1 ]",
+    formulaLatex: "M=P×(1+i)n−1i(1+i)n​",
     formulaVars: "M = Monthly payment, P = Loan amount, i = Monthly interest rate, n = Number of payments",
     useCases: [
       "Planning vehicle purchases and financing.",
@@ -1732,7 +1732,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             }}
                             className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                           />
-                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && calc?.title !== "Salary Calculator" && <span className="ml-1 text-[12px] uppercase">Yrs</span>)}
+                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && calc?.title !== "Salary Calculator" && <span className="ml-1 mt-1 text-[12px] uppercase">Yrs</span>)}
                         </div>
                       )}
                     </div>
@@ -1779,7 +1779,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         }}
                         className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
                       />
-                      {calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
+                      {calc?.title === "EPF Calculator" ? <span className="ml-1  text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
                     </div>
                   </div>
                   <input
@@ -1881,7 +1881,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
 {dynamicConfig.gainLabel || "RETURN" }
                     </p>
-                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}</p>
+                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
                   </div>
                 )}
               </div>
