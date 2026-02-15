@@ -156,7 +156,7 @@ const [activeButton, setActiveButton] = useState<string | null>(null);
                 <tr className="border-b border-slate-300 dark:border-slate-800">
                   <th className="p-8 text-sm font-bold text-[#0f172a] dark:text-white">Features</th>
                   <th className="p-8 text-sm font-bold text-[#0f172a] dark:text-white text-center">Basic</th>
-                  <th className="p-8 text-sm font-bold text-blue-600 dark:text-blue-400 text-center">Pro</th>
+<th className="p-8 text-sm font-bold text-[#0f172a] dark:text-white text-center">Pro</th>
                   <th className="p-8 text-sm font-bold text-[#0f172a] dark:text-white text-center">Team</th>
                 </tr>
               </thead>
@@ -172,8 +172,8 @@ const [activeButton, setActiveButton] = useState<string | null>(null);
                       {renderCell(feature.basic)}
                     </td>
 
-                    {/* Pro Column */}
-                    <td className={`p-8 text-center text-[13px] font-bold text-blue-600 dark:text-blue-400 transition-colors duration-300 ${selectedCard === 'Pro' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
+{/* Pro Column */}
+                    <td className={`p-8 text-center text-[13px] text-slate-500 dark:text-slate-400 transition-colors duration-300 ${selectedCard === 'Pro' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
                       {renderCell(feature.pro)}
                     </td>
 

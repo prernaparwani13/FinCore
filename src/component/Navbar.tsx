@@ -7,6 +7,9 @@ const Navbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
+  // Check if current page is a calculator page (not the home page)
+  const isCalculatorPage = location.pathname.startsWith('/calculator') || location.pathname.startsWith('/category');
+
   const navLinks = ['Solutions', 'Product', 'Pricing', 'Resources'];
 
   return (
@@ -16,7 +19,10 @@ const Navbar: React.FC = () => {
       <div className="flex items-center  gap-10">
         {/* Logo Section */}
         <div
-          className=" absolute top-0 left-4 sm:left-6 lg:left-15  flex items-center gap-2.5 sm:gap-3 cursor-pointer group" onClick={() => window.location.href = '/'}>
+          className={`absolute top-0 left-4 sm:left-6 lg:left-15 flex items-center gap-2.5 sm:gap-3 cursor-pointer group ${isCalculatorPage ? '-ml-[19px]' : ''}`}
+          onClick={() => window.location.href = '/'}
+          style={isCalculatorPage ? { marginLeft: '-19px' } : {}}
+        >
           
           <div className=" mt-[8px] w-9 h-9 sm:w-10 sm:h-10 bg-slate-900 dark:bg-slate-100 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
             <span className="text-white dark:text-slate-900 font-black text-lg sm:text-xl">F</span>
