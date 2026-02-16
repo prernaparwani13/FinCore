@@ -69,7 +69,7 @@ const Resources: React.FC = () => {
       </section>
 
       {/* Downloadable Assets */}
-      <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-14 mb-32 ">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-14 mb-32 -mt-[50px]">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
           <div>
             <h2 className="text-2xl font-bold text-[#0f172a] dark:text-white mb-2 mr-15">Downloadable Assets</h2>
@@ -98,7 +98,7 @@ const Resources: React.FC = () => {
       </section>
 
       {/* Webinars Section */}
-      <section className="max-w-7xl mx-auto px-14 pb-32">
+      <section className="max-w-7xl mx-auto px-14 pb-32 -mt-[60px]">
         <div className="text-center mb-16">
           <h2 className="text-2xl font-bold text-[#0f172a] dark:text-white mb-2">Webinars & Tutorials</h2>
           <p className="text-slate-500 dark:text-slate-300 text-sm">Learn directly from our financial experts.</p>

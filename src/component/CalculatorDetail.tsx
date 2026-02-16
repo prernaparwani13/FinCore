@@ -950,7 +950,7 @@ const CALC_CONFIGS: Record<string, any> = {
     label3: "Rate of Interest", min3: 8.2, max3: 8.2, step3: 0.1, def3: 8.2,
     hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (yearlyInvestment: number, tenure: number, rate: number) => {
+    calculate: (yearlyInvestment: number, tenure: number, rate: number, sliderPercentage: number = 0) => {
   const P = Number(yearlyInvestment);
   const years = Number(tenure);
   const annualRate = Number(rate) / 100;
@@ -961,6 +961,9 @@ const CALC_CONFIGS: Record<string, any> = {
   const totalInterest = quarterlyInterest * quarters;
   // Quarterly receivable interest = (P * annualRate) / 4
   const maturityValue = P + totalInterest;
+  // Use slider position for dynamic donut chart effect (since tenure and rate are fixed)
+  // The slider percentage gives us a value from 0-100 based on the investment amount
+  const dynamicRatio = sliderPercentage;
   return {
     totalValue: Math.round(quarterlyInterest), // quarterly receivable interest
     years: years,
@@ -969,7 +972,7 @@ const CALC_CONFIGS: Record<string, any> = {
     estReturns: Math.round(totalInterest),
     maturityValue: Math.round(maturityValue),
     quarterlyInterest: Math.round(quarterlyInterest),
-    ratio: +((totalInterest / P) * 100).toFixed(2)
+    ratio: dynamicRatio > 0 ? dynamicRatio : 41 // Default to 41% if no slider input, fallback for initial render
   };
 },
     totalValueLabel: "QUARTERLY RECEIVABLE INTEREST",
@@ -1014,7 +1017,7 @@ const CALC_CONFIGS: Record<string, any> = {
         estReturns: Math.round(estReturns),
         returnPercentage: rate,
         years: years,
-        ratio: (estReturns / P) * 100
+        ratio: (totalIncome / P) * 100
       };
     },
     totalValueLabel: "MONTHLY Income",
@@ -1135,6 +1138,7 @@ const CALC_CONFIGS: Record<string, any> = {
     totalInvested: Math.round(totalInvested),
     estReturns: Math.round(estReturns),
     returnPercentage: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
+    ratio: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
     years: yearsToRetire,
     monthlySalary,
     annualIncreasePercent,
@@ -1164,49 +1168,49 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "NSC Calculator": {
-    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 100,
-    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 1,
-    label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
-    hasThirdSlider: true,
-    isV2Currency: false,
-    calculate: (amountInvested: number, rate: number) => {
-  const P = Number(amountInvested);
-  const r = Number(rate) / 100;
-  const t = 5; // NSC fixed tenure (5 years)
+    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 100,
+    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 1,
+    label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
+    hasThirdSlider: true,
+    isV2Currency: false,
+    calculate: (amountInvested: number, rate: number) => {
+  const P = Number(amountInvested);
+  const r = Number(rate) / 100;
+  const t = 5; // NSC fixed tenure (5 years)
 
-  // NSC compounds ANNUALLY, not half-yearly
-  const totalValue = P * Math.pow(1 + r, t);
-  const estReturns = totalValue - P;
+  // NSC compounds ANNUALLY, not half-yearly
+  const totalValue = P * Math.pow(1 + r, t);
+  const estReturns = totalValue - P;
 
-  return {
-    totalValue: Math.round(totalValue),
-    totalInvested: P,
-    estReturns: Math.round(estReturns),
-    returnPercentage: +((estReturns / P) * 100).toFixed(2),
-    years: t,
-    ratio: +((estReturns / P) * 100).toFixed(2)
-  };
+  return {
+    totalValue: Math.round(totalValue),
+    totalInvested: P,
+    estReturns: Math.round(estReturns),
+    returnPercentage: +((estReturns / P) * 100).toFixed(2),
+    years: t,
+    ratio: +((estReturns / P) * 100).toFixed(2)
+  };
 },
 
-    totalValueLabel: "TOTAL AMOUNT",
-    gainLabel: "RETURN %",
-    investedLabel: "Amount Invested",
-    profitLabel: "Total Interest",
-    formulaText: "This NSC calculator uses compound interest formula with half-yearly compounding over 5 years:",
-    formulaLatex: "FV = P Ã— (1 + r/2)^(2 Ã— 5)",
-    formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate",
-    useCases: [
-      "Planning investments in National Savings Certificates.",
-      "Estimating maturity value and interest earned.",
-      "Comparing NSC returns with other investment options."
-    ],
-    definitions: [
-      { title: "Amount Invested", desc: "The initial amount invested in NSC." },
-      { title: "Rate of Interest (p.a.)", desc: "The annual interest rate offered on NSC." },
-      { title: "Total Amount", desc: "The maturity value including principal and interest." },
-      { title: "Total Interest", desc: "The total interest earned over 5 years." }
-    ]
-  },
+    totalValueLabel: "TOTAL AMOUNT",
+    gainLabel: "RETURN %",
+    investedLabel: "Amount Invested",
+    profitLabel: "Total Interest",
+    formulaText: "This NSC calculator uses compound interest formula with half-yearly compounding over 5 years:",
+    formulaLatex: "FV = P Ã— (1 + r/2)^(2 Ã— 5)",
+    formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate",
+    useCases: [
+      "Planning investments in National Savings Certificates.",
+      "Estimating maturity value and interest earned.",
+      "Comparing NSC returns with other investment options."
+    ],
+    definitions: [
+      { title: "Amount Invested", desc: "The initial amount invested in NSC." },
+      { title: "Rate of Interest (p.a.)", desc: "The annual interest rate offered on NSC." },
+      { title: "Total Amount", desc: "The maturity value including principal and interest." },
+      { title: "Total Interest", desc: "The total interest earned over 5 years." }
+    ]
+  },
   "Stock Average Calculator": {
     // Custom calculator with multiple share blocks
     calculate: (shares: {buyPrice: string, quantity: string}[]) => {
@@ -1220,18 +1224,27 @@ const CALC_CONFIGS: Record<string, any> = {
         return sum + quantity;
       }, 0);
       const averagePrice = totalShares > 0 ? totalAmount / totalShares : 0;
+      
+      // For Stock Average, we'll show a fixed ratio based on whether user has entered data
+      // If no shares entered (totalAmount = 0), show empty donut
+      // If shares entered, show a placeholder ratio for visualization
+      const hasData = totalAmount > 0 && totalShares > 0;
+      const displayRatio = hasData ? 50 : 0; // Show 50% filled when has data, else 0%
+      
       return {
         totalValue: Math.round(totalAmount),
         averagePrice: Math.round(averagePrice * 100) / 100,
         totalShares: Math.round(totalShares),
         returnPercentage: 0, // Not applicable
-        ratio: 0
+        ratio: displayRatio,
+        hasDonutChart: true // Flag to show donut chart
       };
     },
     totalValueLabel: "TOTAL AMOUNT",
     gainLabel: "",
     investedLabel: "Average Price",
     profitLabel: "Total Shares",
+    hasDonutChart: true, // Show donut chart for Stock Average
     formulaText: "This stock average calculator computes the weighted average price based on multiple purchases:",
     formulaLatex: "Average Price = Total Amount / Total Shares",
     formulaVars: "Total Amount = Sum of (Buy Price × Quantity) for all shares, Total Shares = Sum of Quantities",
@@ -1248,7 +1261,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Shares", desc: "The total number of shares owned." }
     ]
   },
-  "Salary Calculator": {
+"Salary Calculator": {
     label1: "Cost to Company (CTC)", min1: 100000, max1: 50000000, step1: 10000, def1: 100000,
     label2: "Bonus Value (%)", min2: 0, max2: 100, step2: 0.1, def2: 0,
     label3: "Monthly Professional Tax", min3: 0, max3: 5000, step3: 50, def3: 0,
@@ -1276,6 +1289,11 @@ const CALC_CONFIGS: Record<string, any> = {
   const takeHomeAnnual = takeHomeMonthly * 12;
   const totalAnnualDeductions = totalMonthlyDeductions * 12;
 
+  // 5. Calculate ratio for donut chart (Deductions as percentage of gross salary)
+  // Using monthlyCTC (which includes bonus) as the gross
+  const grossSalary = monthlyCTC;
+  const ratio = grossSalary > 0 ? (totalMonthlyDeductions / grossSalary) * 100 : 0;
+
   return {
     totalValue: Math.round(takeHomeMonthly),
     takeHomeAnnual: Math.round(takeHomeAnnual),
@@ -1284,7 +1302,7 @@ const CALC_CONFIGS: Record<string, any> = {
     monthlySalary: Math.round(monthlyCTC - employerPf - monthlyBonusComponent), // This is Gross Salary
     ctc: Math.round(ctc),
     returnPercentage: 0,
-    ratio: 0
+    ratio: +ratio.toFixed(2)
   };
 },
     totalValueLabel: "TAKE HOME MONTHLY SALARY",
@@ -1326,6 +1344,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
   const [frequency, setFrequency] = useState(2); // default half-yearly
   const [isAnimating, setIsAnimating] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Income Tax Calculator specific state
   const [assessmentYear, setAssessmentYear] = useState('2025-2026');
@@ -1394,6 +1413,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   } else if (config.hasThirdSlider) {
     if (calc?.title === "RD Calculator") {
       results = config.calculate(val1, val2, val3, timeUnit);
+    } else if (calc?.title === "SCSS Calculator") {
+      results = config.calculate(val1, val2, val3, percentage1);
     } else {
       results = config.calculate(val1, val2, val3);
     }
@@ -1410,7 +1431,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   // Trigger animation when ratio changes
   useEffect(() => {
     setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 300);
+    const timer = setTimeout(() => setIsAnimating(false), 1000);
     return () => clearTimeout(timer);
   }, [ratio]);
 
@@ -1595,6 +1616,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             if (numVal > config.max1) setV1(String(config.max1));
             else setV1(val);
           }
+          setHasInteracted(true);
         }}
         onBlur={() => {
           // If empty or invalid on exit, snap to min
@@ -1675,6 +1697,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               ? "YRS"
               : calc?.title === "EPF Calculator"
               ? "Yr"
+              : calc?.title === "SCSS Calculator"
+              ? "YRS"
               : "%"}
           </span>
         )}
@@ -1730,7 +1754,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
               {/* Third Input */}
               {config.hasThirdSlider && (
-  <div>
+  <div className={calc?.title === "SCSS Calculator" ? "mt-4" : ""}>
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label3}
@@ -1788,7 +1812,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 }}
                 className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
               />
-              {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? (
+              {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" || calc?.title === "SCSS Calculator" ? (
                 <span className="ml-1 text-[12px] uppercase">%</span>
               ) : (
                 calc?.title !== "SSY Calculator" &&
