@@ -214,7 +214,7 @@ const [activeButton, setActiveButton] = useState<string | null>(null);
 
         {/* 4. Enterprise CTA Section (NEW) */}
         <section className="max-w-[1400px] mx-auto px-15 py-20 mb-0 mt-20 -mr-13 -ml-14 bg-white dark:bg-slate-900">
-          <div className="bg-blue-50 dark:bg-blue-800/30 border border-slate-100 dark:border-blue-800 rounded-[3rem] px-25 md:py-20 text-center">
+          <div className="bg-blue-50 dark:bg-blue-800/30 border border-slate-100 dark:border-blue-800 rounded-[3rem] px-25 md:py-20 text-center -mt-[27px] -mb-[27px]">
             <div className="w-16 h-16 bg-white dark:bg-blue-500/30 rounded-2xl flex items-center justify-center mx-auto mb-8">
               <Briefcase className="text-blue-600" size={28} />
             </div>

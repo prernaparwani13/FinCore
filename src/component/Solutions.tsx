@@ -62,7 +62,7 @@ const Solutions: React.FC = () => {
 
 
       {/* Why Choose Section */}
-      <section className="text-center mb-18">
+      <section className="text-center mb-18 -mt-[50px]">
         <h2 className="text-3xl font-bold mb-10 text-slate-900 dark:text-white">Why Choose FinCore?</h2>
         <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 px-6">
           {features.map((f, i) => (
@@ -78,7 +78,7 @@ const Solutions: React.FC = () => {
       </section>
 
       {/* Enterprise Feature Card */}
-      <section className="max-w-[1500px] max-h-[1400px] mx-auto px-4 md:px-8 lg:px-13 py-20 mb-32 bg-white dark:bg-slate-900">
+      <section className="max-w-[1500px] max-h-[1400px] mx-auto px-4 md:px-8 lg:px-13 py-20 mb-32 bg-white dark:bg-slate-900 pt-[50px]">
         <div className="relative bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-[2rem] p-6 md:p-14 overflow-hidden flex flex-col md:flex-row items-center justify-between">
           <div className="max-w-md z-10">
             <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold tracking-wider rounded-md mb-6 uppercase">
