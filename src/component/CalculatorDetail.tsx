@@ -1070,7 +1070,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Gratuity", desc: "A lump sum payment made to an employee upon retirement or resignation." }
     ]
   },
-  "EPF Calculator": {
+"EPF Calculator": {
     label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 10000,
     label2: "Your age", min2: 15, max2: 58, step2: 1, def2: 15,
     label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 1,
@@ -1087,51 +1087,55 @@ const CALC_CONFIGS: Record<string, any> = {
   annualIncreasePercent = 5,
   interestRate = 8.25
 ) => {
-
   const retirementAge = 60;
-  const years = retirementAge - age;
-
+  const yearsToRetire = retirementAge - age;
+  const monthlyIntRate = (interestRate / 100) / 12;
   const annualIncrease = annualIncreasePercent / 100;
-  const annualRate = interestRate / 100;
-
+  let principalBalance = 0; 
   let totalInvested = 0;
-  let totalValue = 0;
   let currentSalary = monthlySalary;
-
-  for (let year = 0; year < years; year++) {
-
-    const monthlyContribution =
-      (currentSalary * (contributionPercent + 3.67)) / 100;
-
-    const yearlyContribution = monthlyContribution * 12;
-
-    totalInvested += yearlyContribution;
-
-    // Add yearly contribution first
-    totalValue += yearlyContribution;
-
-    // Apply annual interest on total balance
-    totalValue *= (1 + annualRate);
-
-    // Increase salary for next year
+  
+  for (let year = 0; year < yearsToRetire; year++) {
+    let yearStartBalance = principalBalance;
+    let totalInterest = 0;
+    
+    // Interest on opening balance for 12 months
+    totalInterest += yearStartBalance * monthlyIntRate * 12;
+    
+    // Monthly loop for deposits and their interest
+    for (let month = 1; month <= 12; month++) {
+      // Calculate Monthly EPF Deposit
+      const empContrib = (currentSalary * contributionPercent) / 100;
+      
+      // Employer Share: 12% total, but Pension (EPS) is capped at 1,250
+      const totalEmployer12 = (currentSalary * 12) / 100;
+      const epsContribution = Math.min((currentSalary * 8.33) / 100, 1250);
+      const employerEpfShare = totalEmployer12 - epsContribution;
+      const monthlyDeposit = empContrib + employerEpfShare;
+      
+      // Each deposit earns interest for remaining months of the year
+      const monthsRemaining = 12 - month;
+      totalInterest += monthlyDeposit * monthlyIntRate * monthsRemaining;
+      
+      principalBalance += monthlyDeposit;
+      totalInvested += monthlyDeposit;
+    }
+    
+    // Credit interest at year end
+    principalBalance += totalInterest;
+    
+    // Salary Increase for the next year
     currentSalary *= (1 + annualIncrease);
   }
-
-  const estReturns = totalValue - totalInvested;
-
+  
+  const estReturns = principalBalance - totalInvested;
+  
   return {
-    totalValue: Math.round(totalValue),
+    totalValue: Math.round(principalBalance),
     totalInvested: Math.round(totalInvested),
     estReturns: Math.round(estReturns),
-    returnPercentage:
-      totalInvested > 0
-        ? +((estReturns / totalInvested) * 100).toFixed(2)
-        : 0,
-    years,
-    ratio:
-      totalInvested > 0
-        ? +((estReturns / totalInvested) * 100).toFixed(2)
-        : 0,
+    returnPercentage: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
+    years: yearsToRetire,
     monthlySalary,
     annualIncreasePercent,
     interestRate
@@ -1452,7 +1456,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
             </button>
             <div className="flex flex-col items-start text-left">
-              <div className="text-blue-600 dark:text-blue-400 text-[10px] sm:text-[14px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1">
+              <div className="text-blue-600 dark:text-blue-400 text-[10px] sm:text-[14px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1 mt-5">
                 {calc?.category || "INVESTMENT"}
               </div>
               <h1 className="text-xl sm:text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -1582,11 +1586,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           min={config.min1}
                           max={config.max1}
                           value={v1}
-                          onChange={(e) => setV1(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || val === '-') {
+                              // Reset to default value when input is empty
+                              setV1(String(config.def1 || config.min1));
+                            } else {
+                              const numVal = Number(val);
+                              if (numVal < config.min1) setV1(String(config.min1));
+                              else if (numVal > config.max1) setV1(String(config.max1));
+                              else setV1(val);
+                            }
+                          }}
                           onBlur={(e) => {
                             const val = Number(e.target.value);
                             if (val < config.min1) setV1(String(config.min1));
                             else if (val > config.max1) setV1(String(config.max1));
+                            else if (isNaN(val) || e.target.value === '') setV1(String(config.def1 || config.min1));
                             else setV1(e.target.value);
                           }}
                           className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
@@ -1634,11 +1650,23 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         min={config.min2}
         max={config.max2}
         value={v2}
-        onChange={(e) => setV2(e.target.value)}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === '' || val === '-') {
+            // Reset to default value when input is empty
+            setV2(String(config.def2 || config.min2));
+          } else {
+            const numVal = Number(val);
+            if (numVal < config.min2) setV2(String(config.min2));
+            else if (numVal > config.max2) setV2(String(config.max2));
+            else setV2(val);
+          }
+        }}
         onBlur={(e) => {
           const val = Number(e.target.value);
           if (val < config.min2) setV2(String(config.min2));
           else if (val > config.max2) setV2(String(config.max2));
+          else if (isNaN(val) || e.target.value === '') setV2(String(config.def2 || config.min2));
           else setV2(e.target.value);
         }}
         className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
@@ -1733,7 +1761,17 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             min={config.min3}
                             max={config.max3}
                             value={v3}
-                            onChange={(e) => setV3(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '' || val === '-') {
+                                setV3(val);
+                              } else {
+                                const numVal = Number(val);
+                                if (numVal < config.min3) setV3(String(config.min3));
+                                else if (numVal > config.max3) setV3(String(config.max3));
+                                else setV3(val);
+                              }
+                            }}
                             onBlur={(e) => {
                               const val = Number(e.target.value);
                               if (val < config.min3) setV3(String(config.min3));
@@ -1780,7 +1818,17 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         min={config.min4}
                         max={config.max4}
                         value={v4}
-                        onChange={(e) => setV4(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '' || val === '-') {
+                            setV4(val);
+                          } else {
+                            const numVal = Number(val);
+                            if (numVal < config.min4) setV4(String(config.min4));
+                            else if (numVal > config.max4) setV4(String(config.max4));
+                            else setV4(val);
+                          }
+                        }}
                         onBlur={(e) => {
                           const val = Number(e.target.value);
                           if (val < config.min4) setV4(String(config.min4));
@@ -1827,7 +1875,17 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             min={config.min5}
                             max={config.max5}
                             value={v5}
-                            onChange={(e) => setV5(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '' || val === '-') {
+                                setV5(val);
+                              } else {
+                                const numVal = Number(val);
+                                if (numVal < config.min5) setV5(String(config.min5));
+                                else if (numVal > config.max5) setV5(String(config.max5));
+                                else setV5(val);
+                              }
+                            }}
                             onBlur={(e) => {
                               const val = Number(e.target.value);
                               if (val < config.min5) setV5(String(config.min5));
@@ -1896,8 +1954,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 )}
               </div>
 
-              {/* Currency Toggle */}
-              <div className="flex justify-end">
+              {/* Currency Toggle - Hidden for EPF Calculator */}
+              {calc?.title !== "EPF Calculator" && (
+                <div className="flex justify-end">
                   <button
                     onClick={() => {
                       const conversionRate = 83;
@@ -1918,11 +1977,12 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                       }
                       setIsINR(!isINR);
                     }}
-                    className="px-2 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-4 ml-92"
+                    className="px-2 py-2 rounded-full text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer -mt-4 ml-90"
                   >
                     {isINR ? 'USD ($)' : 'INR (₹)'}
                   </button>
                 </div>
+              )}
               <div className="w-full space-y-1">
                 
                 
