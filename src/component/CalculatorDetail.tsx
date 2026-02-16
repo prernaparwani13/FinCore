@@ -334,9 +334,9 @@ const CALC_CONFIGS: Record<string, any> = {
   }
 
   return {
-    totalValue: mode === 'exclusive' ? totalPrice : originalPrice,
+    totalValue: mode === 'exclusive' ? totalPrice : +originalPrice.toFixed(2),
     totalInvested: price,
-    estReturns: gstAmount,
+    estReturns: +gstAmount.toFixed(2),
     returnPercentage: rate,
     years: 1,
     ratio: rate
@@ -962,7 +962,7 @@ const CALC_CONFIGS: Record<string, any> = {
   // The slider percentage gives us a value from 0-100 based on the investment amount
   const dynamicRatio = sliderPercentage;
   return {
-    totalValue: Math.round(quarterlyInterest), // quarterly receivable interest
+    totalValue: Math.round(maturityValue), // maturity value
     years: years,
     returnPercentage: +((totalInterest / P) * 100).toFixed(2),
     totalInvested: Math.round(P),
@@ -972,10 +972,10 @@ const CALC_CONFIGS: Record<string, any> = {
     ratio: dynamicRatio > 0 ? dynamicRatio : 41 // Default to 41% if no slider input, fallback for initial render
   };
 },
-    totalValueLabel: "QUARTERLY RECEIVABLE INTEREST",
+    totalValueLabel: "MATURITY VALUE",
     gainLabel: "RETURN %",
     investedLabel: "Total Interest",
-    profitLabel: "Maturity Value",
+    profitLabel: "Quarterly Receivable Interest",
     formulaText: "This SCSS calculator uses compound interest with quarterly compounding for yearly investments over a fixed tenure.",
     formulaLatex: "FV = âˆ‘ P Ã— (1 + r/4)^{quarters remaining}",
     formulaVars: "FV = Maturity Value, P = Yearly Investment, r = Annual Interest Rate, quarters = Total quarters",
@@ -1493,14 +1493,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           {/* Inputs Section */}
           <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 md:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
             <div className="text-slate-400 text-[10px] mb-4 font-bold uppercase tracking-widest text-left">
-              <Info size={14} className="inline mr-2" /> Adjust sliders or type values
+              <Info size={14} className="inline mr-2 -mt-1" /> Adjust sliders or type values
             </div>
 
             <div className="space-y-1 sm:space-y-1">
               {/* GST Mode Radio Buttons */}
               {calc?.title === "GST Calculator" && (
                 <div className="mt-4">
-                  <label className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2  mr-138  block">GST Mode</label>
+                  <label className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2  mr-139  block">GST Mode</label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -2012,7 +2012,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
-                    className={`transition-all duration-700 ease-in-out ${isAnimating ? 'animate-pulse' : ''}`}
+                    className="transition-all duration-1500 ease-in-out"
                   />
                 </svg>
                 {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
