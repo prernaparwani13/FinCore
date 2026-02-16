@@ -1577,135 +1577,140 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <>
                   {/* First Input */}
                   <div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-2">
-                      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label1}</label>
-                      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                        <span className="mr-1">{isINR ? '₹' : '$'}</span>
-                        <input
-                          type="number"
-                          min={config.min1}
-                          max={config.max1}
-                          value={v1}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '' || val === '-') {
-                              // Reset to default value when input is empty
-                              setV1(String(config.def1 || config.min1));
-                            } else {
-                              const numVal = Number(val);
-                              if (numVal < config.min1) setV1(String(config.min1));
-                              else if (numVal > config.max1) setV1(String(config.max1));
-                              else setV1(val);
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const val = Number(e.target.value);
-                            if (val < config.min1) setV1(String(config.min1));
-                            else if (val > config.max1) setV1(String(config.max1));
-                            else if (isNaN(val) || e.target.value === '') setV1(String(config.def1 || config.min1));
-                            else setV1(e.target.value);
-                          }}
-                          className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
-                        />
-                      </div>
-                    </div>
-                    {config.min1 !== config.max1 && (
-                      <>
-                        <input
-                          type="range"
-                          min={config.min1}
-                          max={config.max1}
-                          step={config.step1}
-                          value={v1}
-                          onChange={(e) => setV1(e.target.value)}
-                          style={getSliderStyle(percentage1, 0)}
-                          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                        />
-                        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
-                          <span>{config.min1.toLocaleString()}</span>
-                          <span>{config.max1.toLocaleString()}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-2">
+    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+      {config.label1}
+    </label>
+    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <span className="mr-1">{isINR ? '₹' : '$'}</span>
+      <input
+        type="number"
+        value={v1}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === '') {
+            setV1(''); // Allow empty for typing
+          } else {
+            const numVal = Number(val);
+            if (numVal > config.max1) setV1(String(config.max1));
+            else setV1(val);
+          }
+        }}
+        onBlur={() => {
+          // If empty or invalid on exit, snap to min
+          if (v1 === '' || isNaN(Number(v1)) || Number(v1) < config.min1) {
+            setV1(String(config.min1));
+          }
+        }}
+        className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
+      />
+    </div>
+  </div>
+
+  {config.min1 !== config.max1 && (
+    <>
+      <input
+        type="range"
+        min={config.min1}
+        max={config.max1}
+        step={config.step1}
+        // KEY FIX: Use config.min1 if v1 is empty so the slider resets
+        value={v1 === '' ? config.min1 : v1} 
+        onChange={(e) => setV1(e.target.value)}
+        style={getSliderStyle(v1 === '' ? 0 : percentage1, 0)}
+        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+      />
+      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+        <span>{config.min1.toLocaleString()}</span>
+        <span>{config.max1.toLocaleString()}</span>
+      </div>
+    </>
+  )}
+</div>
+                  
                 </>
               )}
 
               {/* Second Input */}
               <div>
-                {calc?.title !== "Stock Average Calculator" && (
-  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-3">
-    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
-      {config.label2}
-    </label>
+  {calc?.title !== "Stock Average Calculator" && (
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-3">
+      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+        {config.label2}
+      </label>
 
-    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-      
-      {(config.isV2Currency || calc?.title === "HRA Calculator") && (
-        <span className="mr-1">{isINR ? '₹' : '$'}</span>
-      )}
+      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+        {(config.isV2Currency || calc?.title === "HRA Calculator") && (
+          <span className="mr-1">{isINR ? '₹' : '$'}</span>
+        )}
 
+        <input
+          type="number"
+          value={v2}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === '' || val === '-') {
+              setV2(val); // Allow empty for typing
+            } else {
+              const numVal = Number(val);
+              // Clamp only the upper bound during typing
+              if (numVal > config.max2) setV2(String(config.max2));
+              else setV2(val);
+            }
+          }}
+          onBlur={() => {
+            // Safety reset on exit
+            if (v2 === '' || isNaN(Number(v2)) || Number(v2) < config.min2) {
+              setV2(String(config.def2 || config.min2));
+            }
+          }}
+          className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+        />
+
+        {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
+          <span className="ml-1">
+            {calc?.title === "SSY Calculator"
+              ? "yr"
+              : calc?.title === "Gratuity Calculator"
+              ? "YRS"
+              : calc?.title === "EPF Calculator"
+              ? "Yr"
+              : "%"}
+          </span>
+        )}
+      </div>
+    </div>
+  )}
+
+  {config.min2 !== config.max2 && (
+    <>
       <input
-        type="number"
+        type="range"
         min={config.min2}
         max={config.max2}
-        value={v2}
-        onChange={(e) => {
-          const val = e.target.value;
-          if (val === '' || val === '-') {
-            // Reset to default value when input is empty
-            setV2(String(config.def2 || config.min2));
-          } else {
-            const numVal = Number(val);
-            if (numVal < config.min2) setV2(String(config.min2));
-            else if (numVal > config.max2) setV2(String(config.max2));
-            else setV2(val);
-          }
-        }}
-        onBlur={(e) => {
-          const val = Number(e.target.value);
-          if (val < config.min2) setV2(String(config.min2));
-          else if (val > config.max2) setV2(String(config.max2));
-          else if (isNaN(val) || e.target.value === '') setV2(String(config.def2 || config.min2));
-          else setV2(e.target.value);
-        }}
-        className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+        step={config.step2}
+        // If v2 is empty, slider visually snaps to the min value
+        value={v2 === '' || v2 === '-' ? config.min2 : v2}
+        onChange={(e) => setV2(e.target.value)}
+        // Ensure the filled track percentage also resets to 0 when empty
+        style={getSliderStyle(v2 === '' || v2 === '-' ? 0 : percentage2, 1)}
+        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
       />
-
-      {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
-        <span className="ml-1">
-          {calc?.title === "SSY Calculator"
-            ? "yr"
-            : calc?.title === "Gratuity Calculator"
-            ? "YRS"
-            : calc?.title === "EPF Calculator"
-            ? "Yr"
-            : "%"}
+      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+        <span>
+          {config.min2.toLocaleString()}
+          {!config.isV2Currency && calc?.title !== "Salary Calculator" && 
+          (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}
         </span>
-      )}
-    </div>
-  </div>
-)}
-
-                {config.min2 !== config.max2 && (
-                  <>
-                    <input
-                      type="range"
-                      min={config.min2}
-                      max={config.max2}
-                      step={config.step2}
-                      value={v2}
-                      onChange={(e) => setV2(e.target.value)}
-                      style={getSliderStyle(percentage2, 1)}
-                      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                    />
-                    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
-                      <span>{config.min2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
-                      <span>{config.max2.toLocaleString()}{!config.isV2Currency && calc?.title !== "Salary Calculator" && (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}</span>
-                    </div>
-                  </>
-                )}
-              </div>
+        <span>
+          {config.max2.toLocaleString()}
+          {!config.isV2Currency && calc?.title !== "Salary Calculator" && 
+          (calc?.title === "Gratuity Calculator" ? "YRS" : calc?.title === "EPF Calculator" ? "Yr" : "%")}
+        </span>
+      </div>
+    </>
+  )}
+</div>
 
 
 
@@ -1725,199 +1730,241 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
               {/* Third Input */}
               {config.hasThirdSlider && (
-                <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
-                    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label3}</label>
-                    <div className="flex items-center gap-2">
-                      {calc?.title === "RD Calculator" && (
-                        <select
-                          value={timeUnit}
-                          onChange={(e) => setTimeUnit(e.target.value)}
-                          className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold border border-blue-100 dark:border-blue-800/50"
-                        >
-                          <option value="Years">Years</option>
-                          <option value="Months">Months</option>
-                        </select>
-                      )}
-                      {calc?.title === "NSC Calculator" && (
-                        <select
-                          value={v3}
-                          onChange={(e) => setV3(e.target.value)}
-                          className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
-                        >
-                          <option value="1">Yearly</option>
-                          <option value="2">Half-Yearly</option>
-                        </select>
-                      )}
-                      {calc?.title === "PPF Calculator" ? (
-                        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                          <span className="text-right">7.1%</span>
-                        </div>
-                      ) : (
-                        calc?.title !== "NSC Calculator" && <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                          {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
-                          <input
-                            type="number"
-                            min={config.min3}
-                            max={config.max3}
-                            value={v3}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '' || val === '-') {
-                                setV3(val);
-                              } else {
-                                const numVal = Number(val);
-                                if (numVal < config.min3) setV3(String(config.min3));
-                                else if (numVal > config.max3) setV3(String(config.max3));
-                                else setV3(val);
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const val = Number(e.target.value);
-                              if (val < config.min3) setV3(String(config.min3));
-                              else if (val > config.max3) setV3(String(config.max3));
-                              else setV3(e.target.value);
-                            }}
-                            className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
-                          />
-                          {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? <span className="ml-1 text-[12px] uppercase">%</span> : (calc?.title !== "SSY Calculator" && calc?.title !== "RD Calculator" && calc?.title !== "HRA Calculator" && calc?.title !== "Salary Calculator" && <span className="ml-1 mt-1 text-[12px] uppercase">Yrs</span>)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {config.min3 !== config.max3 && calc?.title !== "PPF Calculator" && (
-                    <>
-                      <input
-                        type="range"
-                        min={config.min3}
-                        max={config.max3}
-                        step={config.step3}
-                        value={v3}
-                        onChange={(e) => setV3(e.target.value)}
-                        style={getSliderStyle(percentage3)}
-                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                      />
-                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
-                        <span>{config.min3}</span>
-                        <span>{config.max3}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
+  <div>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+        {config.label3}
+      </label>
+      <div className="flex items-center gap-2">
+        {calc?.title === "RD Calculator" && (
+          <select
+            value={timeUnit}
+            onChange={(e) => setTimeUnit(e.target.value)}
+            className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold border border-blue-100 dark:border-blue-800/50"
+          >
+            <option value="Years">Years</option>
+            <option value="Months">Months</option>
+          </select>
+        )}
+        {calc?.title === "NSC Calculator" && (
+          <select
+            value={v3}
+            onChange={(e) => setV3(e.target.value)}
+            className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
+          >
+            <option value="1">Yearly</option>
+            <option value="2">Half-Yearly</option>
+          </select>
+        )}
+        {calc?.title === "PPF Calculator" ? (
+          <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            <span className="text-right">7.1%</span>
+          </div>
+        ) : (
+          calc?.title !== "NSC Calculator" && (
+            <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+              {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
+                <span className="mr-1">{isINR ? "₹" : "$"}</span>
               )}
+              <input
+                type="number"
+                value={v3}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "" || val === "-") {
+                    setV3(val); // Allow empty for typing
+                  } else {
+                    const numVal = Number(val);
+                    // Only clamp the max during typing so user can backspace
+                    if (numVal > config.max3) setV3(String(config.max3));
+                    else setV3(val);
+                  }
+                }}
+                onBlur={() => {
+                  // Safety cleanup on exit
+                  if (v3 === "" || isNaN(Number(v3)) || Number(v3) < config.min3) {
+                    setV3(String(config.def3 || config.min3));
+                  }
+                }}
+                className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+              />
+              {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" ? (
+                <span className="ml-1 text-[12px] uppercase">%</span>
+              ) : (
+                calc?.title !== "SSY Calculator" &&
+                calc?.title !== "RD Calculator" &&
+                calc?.title !== "HRA Calculator" &&
+                calc?.title !== "Salary Calculator" && (
+                  <span className="ml-1 mt-1 text-[12px] uppercase">Yrs</span>
+                )
+              )}
+            </div>
+          )
+        )}
+      </div>
+    </div>
+
+    {config.min3 !== config.max3 && calc?.title !== "PPF Calculator" && (
+      <>
+        <input
+          type="range"
+          min={config.min3}
+          max={config.max3}
+          step={config.step3}
+          // Force slider to min position if input is empty
+          value={v3 === "" || v3 === "-" ? config.min3 : v3}
+          onChange={(e) => setV3(e.target.value)}
+          // Update style to show 0% fill when empty
+          style={getSliderStyle(v3 === "" || v3 === "-" ? 0 : percentage3, 2)}
+          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+        />
+        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+          <span>{config.min3}</span>
+          <span>{config.max3}</span>
+        </div>
+      </>
+    )}
+  </div>
+)}
 
               {/* Fourth Input (for SWP, EPF, HRA) */}
               {config.hasFourthSlider && (
-                <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
-                    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label4}</label>
-                    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                      {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && <span className="mr-1">{isINR ? '₹' : '$'}</span>}
-                      <input
-                        type="number"
-                        min={config.min4}
-                        max={config.max4}
-                        value={v4}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || val === '-') {
-                            setV4(val);
-                          } else {
-                            const numVal = Number(val);
-                            if (numVal < config.min4) setV4(String(config.min4));
-                            else if (numVal > config.max4) setV4(String(config.max4));
-                            else setV4(val);
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const val = Number(e.target.value);
-                          if (val < config.min4) setV4(String(config.min4));
-                          else if (val > config.max4) setV4(String(config.max4));
-                          else setV4(e.target.value);
-                        }}
-                        className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
-                      />
-                      {calc?.title === "EPF Calculator" ? <span className="ml-1  text-[12px] uppercase">%</span> : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? "" : <span className="ml-1 text-[12px] uppercase">Yrs</span>}
-                    </div>
-                  </div>
-                  <input
-                    type="range"
-                    min={config.min4}
-                    max={config.max4}
-                    step={config.step4}
-                    value={v4}
-                    onChange={(e) => setV4(e.target.value)}
-                    style={getSliderStyle(percentage4)}
-                    className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
-                    <span>{calc?.title === "HRA Calculator" ? config.min4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.min4}%` : `${config.min4} Yr`}</span>
-                    <span>{calc?.title === "HRA Calculator" ? config.max4.toLocaleString() : calc?.title === "EPF Calculator" ? `${config.max4}%` : `${config.max4} Yrs`}</span>
-                  </div>
-                </div>
-              )}
-
+  <div>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
+      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+        {config.label4}
+      </label>
+      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+        {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
+          <span className="mr-1">{isINR ? '₹' : '$'}</span>
+        )}
+        <input
+          type="number"
+          value={v4}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === '' || val === '-') {
+              setV4(val); // Allow empty so user can type
+            } else {
+              const numVal = Number(val);
+              // Clamp only the upper bound during typing
+              if (numVal > config.max4) setV4(String(config.max4));
+              else setV4(val);
+            }
+          }}
+          onBlur={() => {
+            // Reset to default or min if left empty or below range
+            if (v4 === '' || isNaN(Number(v4)) || Number(v4) < config.min4) {
+              setV4(String(config.def4 || config.min4));
+            }
+          }}
+          className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+        />
+        {calc?.title === "EPF Calculator" ? (
+          <span className="ml-1 text-[12px] uppercase">%</span>
+        ) : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? (
+          ""
+        ) : (
+          <span className="ml-1 text-[12px] uppercase">Yrs</span>
+        )}
+      </div>
+    </div>
+    
+    <input
+      type="range"
+      min={config.min4}
+      max={config.max4}
+      step={config.step4}
+      // Slider snaps to min visually if field is empty
+      value={v4 === '' || v4 === '-' ? config.min4 : v4}
+      onChange={(e) => setV4(e.target.value)}
+      // Percentage resets to 0 if field is empty
+      style={getSliderStyle(v4 === '' || v4 === '-' ? 0 : percentage4, 3)}
+      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+    />
+    
+    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+      <span>
+        {calc?.title === "HRA Calculator" 
+          ? config.min4.toLocaleString() 
+          : calc?.title === "EPF Calculator" 
+          ? `${config.min4}%` 
+          : `${config.min4} Yr`}
+      </span>
+      <span>
+        {calc?.title === "HRA Calculator" 
+          ? config.max4.toLocaleString() 
+          : calc?.title === "EPF Calculator" 
+          ? `${config.max4}%` 
+          : `${config.max4} Yrs`}
+      </span>
+    </div>
+  </div>
+)}
 
 
               {/* Fifth Input (for EPF, Salary Calculator) */}
               {config.hasFifthSlider && (
-                <div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-4">
-                    <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">{config.label5}</label>
-                    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-                      {calc?.title === "EPF Calculator" ? (
-                        <span className="text-right">{config.def5}%</span>
-                      ) : (
-                        <>
-                          <span className="mr-1">{isINR ? '₹' : '$'}</span>
-                          <input
-                            type="number"
-                            min={config.min5}
-                            max={config.max5}
-                            value={v5}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '' || val === '-') {
-                                setV5(val);
-                              } else {
-                                const numVal = Number(val);
-                                if (numVal < config.min5) setV5(String(config.min5));
-                                else if (numVal > config.max5) setV5(String(config.max5));
-                                else setV5(val);
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const val = Number(e.target.value);
-                              if (val < config.min5) setV5(String(config.min5));
-                              else if (val > config.max5) setV5(String(config.max5));
-                              else setV5(e.target.value);
-                            }}
-                            className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  {config.min5 !== config.max5 && calc?.title !== "EPF Calculator" && (
-                    <>
-                      <input
-                        type="range"
-                        min={config.min5}
-                        max={config.max5}
-                        step={config.step5}
-                        value={v5}
-                        onChange={(e) => setV5(e.target.value)}
-                        style={getSliderStyle(percentage5, 4)}
-                        className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
-                      />
-                      <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
-                        <span>{config.min5.toLocaleString()}</span>
-                        <span>{config.max5.toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+  <div>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-4">
+      <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
+        {config.label5}
+      </label>
+      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+        {calc?.title === "EPF Calculator" ? (
+          <span className="text-right">{config.def5}%</span>
+        ) : (
+          <>
+            <span className="mr-1">{isINR ? '₹' : '$'}</span>
+            <input
+              type="number"
+              value={v5}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || val === '-') {
+                  setV5(val); // Allow empty for typing
+                } else {
+                  const numVal = Number(val);
+                  // Clamp only the upper bound while typing
+                  if (numVal > config.max5) setV5(String(config.max5));
+                  else setV5(val);
+                }
+              }}
+              onBlur={() => {
+                // Safety reset to default or min on exit
+                if (v5 === '' || isNaN(Number(v5)) || Number(v5) < config.min5) {
+                  setV5(String(config.def5 || config.min5));
+                }
+              }}
+              className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+            />
+          </>
+        )}
+      </div>
+    </div>
+    
+    {config.min5 !== config.max5 && calc?.title !== "EPF Calculator" && (
+      <>
+        <input
+          type="range"
+          min={config.min5}
+          max={config.max5}
+          step={config.step5}
+          // Visual reset: Slider snaps to min if field is empty
+          value={v5 === '' || v5 === '-' ? config.min5 : v5}
+          onChange={(e) => setV5(e.target.value)}
+          // Background fill resets to 0% if field is empty
+          style={getSliderStyle(v5 === '' || v5 === '-' ? 0 : percentage5, 4)}
+          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+        />
+        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+          <span>{config.min5.toLocaleString()}</span>
+          <span>{config.max5.toLocaleString()}</span>
+        </div>
+      </>
+    )}
+  </div>
+)}
             </div>
           </div>
 
