@@ -1167,29 +1167,32 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Accumulated by Retirement", desc: "Total EPF balance at retirement including contributions and interest." }
     ]
   },
-  "NSC Calculator": {
-    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 100,
-    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 1,
-    label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
-    hasThirdSlider: true,
-    isV2Currency: false,
-    calculate: (amountInvested: number, rate: number) => {
-  const P = Number(amountInvested);
-  const r = Number(rate) / 100;
-  const t = 5; // NSC fixed tenure (5 years)
+"NSC Calculator": {
+    label1: "Amount Invested", min1: 100, max1: 1000000, step1: 100, def1: 100,
+    label2: "Rate of interest(p.a.)", min2: 1, max2: 10, step2: 0.1, def2: 1,
+    label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
+    hasThirdSlider: true,
+    isV2Currency: false,
+    calculate: (amountInvested: number, rate: number, compoundingFrequency: number) => {
+  const P = Number(amountInvested);
+  const r = Number(rate) / 100;
+  const t = 5; // NSC fixed tenure (5 years)
 
-  // NSC compounds ANNUALLY, not half-yearly
-  const totalValue = P * Math.pow(1 + r, t);
-  const estReturns = totalValue - P;
+  // compoundingFrequency: 1 = Yearly, 2 = Half-yearly
+  const n = compoundingFrequency === 2 ? 2 : 1; // Number of compounding periods per year
+  
+  // Compound interest formula: A = P × (1 + r/n)^(n × t)
+  const totalValue = P * Math.pow(1 + r / n, n * t);
+  const estReturns = totalValue - P;
 
-  return {
-    totalValue: Math.round(totalValue),
-    totalInvested: P,
-    estReturns: Math.round(estReturns),
-    returnPercentage: +((estReturns / P) * 100).toFixed(2),
-    years: t,
-    ratio: +((estReturns / P) * 100).toFixed(2)
-  };
+  return {
+    totalValue: Math.round(totalValue),
+    totalInvested: P,
+    estReturns: Math.round(estReturns),
+    returnPercentage: +((estReturns / P) * 100).toFixed(2),
+    years: t,
+    ratio: +((estReturns / P) * 100).toFixed(2)
+  };
 },
 
     totalValueLabel: "TOTAL AMOUNT",
@@ -1415,12 +1418,12 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
       results = config.calculate(val1, val2, val3, timeUnit);
     } else if (calc?.title === "SCSS Calculator") {
       results = config.calculate(val1, val2, val3, percentage1);
+    } else if (calc?.title === "NSC Calculator") {
+      results = config.calculate(val1, val2, val3);
     } else {
       results = config.calculate(val1, val2, val3);
     }
   } else if (calc?.title === "GST Calculator") {
-    results = config.calculate(val1, val2, gstMode);
-  } else if (config.isV2Currency) {
     results = config.calculate(val1, val2);
   } else {
     results = config.calculate(val1, val2);
