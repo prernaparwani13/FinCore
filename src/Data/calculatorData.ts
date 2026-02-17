@@ -9,7 +9,6 @@ export interface CalculatorItem {
 export const calculatorData: CalculatorItem[] = [
   { title: "Auto Loan", description: "Calculate monthly car payments and total interest costs.", category: "MORTGAGE", icon: "📱", color: "blue" },
   { title: "Compound Interest", description: "Calculate the future value of your investments with compounding.", category: "INVESTMENT", icon: "📈", color: "green" },
-  { title: "EPF Calculator", description: "Calculate your EPF maturity amount based on salary, age, contribution, and salary growth.", category: "RETIREMENT", icon: "🏦", color: "purple" },
   { title: "FD Calculator", description: "Calculate estimated returns and total value based on investment, interest rate, and time period.", category: "INVESTMENT", icon: "📈", color: "green" },
   { title: "GST Calculator", description: "Calculate GST amount and total price including GST.", category: "TAX", icon: "🧾", color: "orange" },
   { title: "Gratuity Calculator", description: "Calculate gratuity amount based on monthly salary and years of service.", category: "RETIREMENT", icon: "💰", color: "purple" },

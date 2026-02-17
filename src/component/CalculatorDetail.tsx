@@ -59,8 +59,8 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Invested Amount",
     profitLabel: "Est. Returns",
     formulaText: "This calculator uses the future value of an annuity due with effective monthly compounding:",
-    formulaLatex: "FV = P \\times \\frac{(1 + r)^n - 1}{r} \\times (1 + r)",
-    formulaVars: "r = (1 + \\text{annual rate})^{1/12} - 1",
+    formulaLatex: "FV = P * ((1 + r)^n - 1) / r",
+    formulaVars: "P = monthlyInvestment, r = effective monthly rate, n = number of months",
     useCases: [
         "Accurate projections matching major mutual fund platforms.",
         "Visualizing long-term wealth creation.",
@@ -163,7 +163,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Loan Amount",
     profitLabel: "Total Interest",
     formulaText: "This amortization calculator uses the standard loan payment formula:",
-    formulaLatex: "M = P [ i(1 + i)^n ] / [ (1 + i)^n â€“ 1 ]",
+    formulaLatex: "M=P×(i(1+i)^n) / ((1+i)^n - 1)",
     formulaVars: "M = Monthly payment, P = Loan amount, i = Monthly interest rate, n = Number of payments",
     useCases: [
       "Understanding how loan payments are split between principal and interest.",
@@ -177,7 +177,7 @@ const CALC_CONFIGS: Record<string, any> = {
     ]
   },
   "Compound Interest": {
-    label1: "Principal Amount", min1: 100, max1: 10000, step1: 100, def1: 100,
+    label1: "Principal Amount", min1: 100, max1: 1000000, step1: 100, def1: 100,
     label2: "Annual Interest Rate (%)", min2: 1, max2: 20, step2: 0.1, def2: 1,
     label3: "Time Period (Years)", min3: 1, max3: 40, step3: 1, def3: 1,
     hasThirdSlider: true,
@@ -262,7 +262,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Principal",
     profitLabel: "Interest Earned",
     formulaText: "This retirement calculator uses the future value of an annuity due formula, assuming contributions are made at the start of each month:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r] Ã— (1 + r)",
+    formulaLatex: "FV = P x [((1 + r)^n - 1) / r] x (1 + r)",
     formulaVars: "FV = Future value, P = Monthly contribution, r = Monthly interest rate, n = Total number of months",
     useCases: [
       "Visualizing how consistent monthly saving builds wealth.",
@@ -348,7 +348,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Actual Amount",
     profitLabel: "GST Amount",
     formulaText: "This GST calculator calculates the Goods and Services Tax:",
-    formulaLatex: "GST Amount = Price Ã— (GST Rate / 100)",
+    formulaLatex: "GST Amount = Price x (GST Rate / 100)",
     formulaVars: "GST Amount = Tax amount, Price = Original price, GST Rate = Tax percentage, Total Price = Price including GST",
     useCases: [
       "Calculating GST for goods and services.",
@@ -384,7 +384,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Amount",
     profitLabel: "Principal Amount",
     formulaText: "This simple interest calculator uses the basic interest formula:",
-    formulaLatex: "SI = P Ã— R Ã— T / 100, Total Amount = P + SI",
+    formulaLatex: "SI = P x R x T / 100, Total Amount = P + SI",
     formulaVars: "SI = Simple Interest, P = Principal Amount, R = Rate of Interest (%), T = Time Period (Years)",
     useCases: [
       "Calculating interest on loans or savings without compounding.",
@@ -434,7 +434,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Amount",
     profitLabel: "Total Interest",
     formulaText: "This auto loan calculator uses the standard loan payment formula:",
-    formulaLatex: "M=P×(1+i)n−1i(1+i)n​",
+    formulaLatex: "M=P x i(1+i)^n/((1+i)^n-1)",
     formulaVars: "M = Monthly payment, P = Loan amount, i = Monthly interest rate, n = Number of payments",
     useCases: [
       "Planning vehicle purchases and financing.",
@@ -477,7 +477,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Est Returns",
     profitLabel: "Total Investment",
     formulaText: "This investment calculator uses the simple interest formula:",
-    formulaLatex: "SI = P Ã— R Ã— T / 100, Total Value = P + SI",
+    formulaLatex: "SI = P x R x T / 100, Total Value = P + SI",
     formulaVars: "SI = Simple Interest, P = Principal, R = Rate of Interest (%), T = Time Period (Years)",
     useCases: [
       "Planning short-term investments.",
@@ -520,7 +520,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Est. Returns",
     profitLabel: "Total Investment",
     formulaText: "This mutual funds calculator uses the compound interest formula:",
-    formulaLatex: "FV = P Ã— (1 + r)^t",
+    formulaLatex: "FV = P x (1 + r)^t",
     formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate, t = Time Period (Years)",
     useCases: [
       "Planning long-term investments in mutual funds.",
@@ -563,7 +563,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Future Cost",
     profitLabel: "Current Cost",
     formulaText: "This inflation calculator uses the compound inflation formula:",
-    formulaLatex: "FC = CC Ã— (1 + r)^t, CI = FC - CC",
+    formulaLatex: "FC = CC x (1 + r)^t, CI = FC - CC",
     formulaVars: "FC = Future Cost, CC = Current Cost, r = Annual Inflation Rate, t = Time Period (Years), CI = Cost Increase",
     useCases: [
       "Estimating the impact of inflation on future expenses.",
@@ -626,7 +626,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Investment",
     profitLabel: "Interest Earned",
     formulaText: "This NPS calculator uses the future value of an annuity formula:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r]",
+    formulaLatex: "FV = P x [((1 + r)^n - 1) / r]",
     formulaVars: "FV = Future value, P = Monthly investment, r = Monthly interest rate, n = Number of months",
     useCases: [
       "Planning retirement savings through NPS.",
@@ -695,7 +695,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Invested",
     profitLabel: "Interest Earned",
     formulaText: "This RD calculator uses the future value of an annuity formula with monthly compounding:",
-    formulaLatex: "FV = P Ã— [((1 + r/12)^n - 1) / (r/12)] Ã— (1 + r/12)",
+    formulaLatex: "FV = P x [((1 + r/12)^n - 1) / (r/12)] x (1 + r/12)",
     formulaVars: "FV = Future value, P = Monthly investment, r = Annual interest rate, n = Total months",
     useCases: [
       "Planning savings through recurring deposits.",
@@ -713,7 +713,7 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "SSY Calculator": {
     label1: "Yearly Investment", min1: 250, max1: 150000, step1: 5000, def1: 250,
-    label2: "Girl's Age", min2: 0, max2: 10, step2: 1, def2: 0,
+    label2: "Girl's Age", min2: 1, max2: 10, step2: 1, def2: 0,
     label3: "Start Year", min3: 2021, max3: 2030, step3: 1, def3: 2021,
 
     hasThirdSlider: true,
@@ -766,7 +766,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Investment",
     profitLabel: "Total Interest",
     formulaText: "This SSY calculator uses the future value of an annuity formula with annual compounding:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r] Ã— (1 + r)^m",
+    formulaLatex: "FV = P x [((1 + r)^n - 1) / r] x (1 + r)^m",
     formulaVars: "FV = Maturity Value, P = Yearly Investment, r = Annual Interest Rate (8.2%), n = Investment Years, m = Remaining Years to Maturity",
     useCases: [
       "Planning savings for girl child's education and marriage.",
@@ -838,7 +838,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Investment",
     profitLabel: "Final value",
     formulaText: "This SWP calculator simulates monthly withdrawals from an investment with compound interest over a specified time period.",
-    formulaLatex: "Balance = (Balance Ã— (1 + r)) - W",
+    formulaLatex: "Balance = (Balance x (1 + r)) - W",
     formulaVars: "Balance = Current balance, r = Monthly interest rate, W = Monthly withdrawal, Time period = Specified years",
     useCases: [
       "Planning retirement income through systematic withdrawals.",
@@ -882,7 +882,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Investment",
     profitLabel: "Total Interest",
     formulaText: "This PPF calculator uses the future value of an annuity formula with annual compounding at 7.1% interest rate:",
-    formulaLatex: "FV = P Ã— [((1 + r)^n - 1) / r] Ã— (1 + r)",
+    formulaLatex: "FV = P x [((1 + r)^n - 1) / r] x (1 + r)",
     formulaVars: "FV = Maturity Value, P = Yearly Investment, r = Annual Interest Rate (7.1%), n = Number of Years",
     useCases: [
       "Planning long-term savings through PPF.",
@@ -926,7 +926,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Est. Returns",
     profitLabel: "Invested Amount",
     formulaText: "This lumpsum calculator uses the compound interest formula for a lump sum investment:",
-    formulaLatex: "FV = P Ã— (1 + r)^t",
+    formulaLatex: "FV = P x (1 + r)^t",
     formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate, t = Time Period (Years)",
     useCases: [
       "Planning long-term investments with a single lump sum.",
@@ -977,7 +977,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Total Interest",
     profitLabel: "Quarterly Receivable Interest",
     formulaText: "This SCSS calculator uses compound interest with quarterly compounding for yearly investments over a fixed tenure.",
-    formulaLatex: "FV = âˆ‘ P Ã— (1 + r/4)^{quarters remaining}",
+    formulaLatex: "Total Interest=P×(R/100)xT",
     formulaVars: "FV = Maturity Value, P = Yearly Investment, r = Annual Interest Rate, quarters = Total quarters",
     useCases: [
       "Planning savings for senior citizens with fixed tenure and interest rate.",
@@ -1022,7 +1022,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Interest Rate",
     profitLabel: "Invested Amount",
     formulaText: "This Post Office MIS calculator calculates monthly income based on invested amount and interest rate:",
-    formulaLatex: "Monthly Income = (Principal Ã— Rate) Ã· 12",
+    formulaLatex: "Monthly Income = (Principal xRate)/(100x12)",
     formulaVars: "Principal = Invested Amount, Rate = Annual Interest Rate (%), Monthly Income = Amount received monthly",
     useCases: [
       "Planning regular monthly income from Post Office investments.",
@@ -1038,7 +1038,7 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "Gratuity Calculator": {
     label1: "Monthly Salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 10000,
-    label2: "Years of Service", min2: 1, max2: 30, step2: 1, def2: 1,
+    label2: "Years of Service", min2: 5, max2: 30, step2: 1, def2: 1,
     hasThirdSlider: false,
     isV2Currency: false,
     calculate: (monthlySalary: number, years: number) => {
@@ -1057,7 +1057,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Monthly Salary",
     profitLabel: "Years of Service",
     formulaText: "This Gratuity calculator calculates the gratuity amount based on monthly salary and years of service:",
-    formulaLatex: "Gratuity = (Monthly Salary Ã— 15 Ã— Years of Service) Ã· 26",
+    formulaLatex: "Gratuity = (Monthly Salary × 15 × Years of Service) / 26",
     formulaVars: "Monthly Salary = Basic + DA, Years of Service = Number of years worked",
     useCases: [
       "Calculating gratuity for employees upon retirement or resignation.",
@@ -1068,100 +1068,6 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Monthly Salary (Basic+DA)", desc: "The monthly basic salary plus dearness allowance." },
       { title: "Years of Service", desc: "The number of years the employee has served the organization." },
       { title: "Gratuity", desc: "A lump sum payment made to an employee upon retirement or resignation." }
-    ]
-  },
-"EPF Calculator": {
-    label1: "Monthly salary (Basic+DA)", min1: 10000, max1: 200000, step1: 1000, def1: 10000,
-    label2: "Your age", min2: 15, max2: 58, step2: 1, def2: 15,
-    label3: "Your contribution (%)", min3: 1, max3: 20, step3: 0.5, def3: 1,
-    label4: "Annual increase in salary (%)", min4: 1, max4: 15, step4: 0.5, def4: 1,
-    label5: "Rate of interest (%)", min5: 8.25, max5: 8.25, step5: 0.01, def5: 8.25,
-    hasThirdSlider: true,
-    hasFourthSlider: true,
-    hasFifthSlider: true,
-    isV2Currency: false,
-  calculate: (
-  monthlySalary = 30000,
-  age = 25,
-  contributionPercent = 12,
-  annualIncreasePercent = 5,
-  interestRate = 8.25
-) => {
-  const retirementAge = 60;
-  const yearsToRetire = retirementAge - age;
-  const monthlyIntRate = (interestRate / 100) / 12;
-  const annualIncrease = annualIncreasePercent / 100;
-  let principalBalance = 0; 
-  let totalInvested = 0;
-  let currentSalary = monthlySalary;
-  
-  for (let year = 0; year < yearsToRetire; year++) {
-    let yearStartBalance = principalBalance;
-    let totalInterest = 0;
-    
-    // Interest on opening balance for 12 months
-    totalInterest += yearStartBalance * monthlyIntRate * 12;
-    
-    // Monthly loop for deposits and their interest
-    for (let month = 1; month <= 12; month++) {
-      // Calculate Monthly EPF Deposit
-      const empContrib = (currentSalary * contributionPercent) / 100;
-      
-      // Employer Share: 12% total, but Pension (EPS) is capped at 1,250
-      const totalEmployer12 = (currentSalary * 12) / 100;
-      const epsContribution = Math.min((currentSalary * 8.33) / 100, 1250);
-      const employerEpfShare = totalEmployer12 - epsContribution;
-      const monthlyDeposit = empContrib + employerEpfShare;
-      
-      // Each deposit earns interest for remaining months of the year
-      const monthsRemaining = 12 - month;
-      totalInterest += monthlyDeposit * monthlyIntRate * monthsRemaining;
-      
-      principalBalance += monthlyDeposit;
-      totalInvested += monthlyDeposit;
-    }
-    
-    // Credit interest at year end
-    principalBalance += totalInterest;
-    
-    // Salary Increase for the next year
-    currentSalary *= (1 + annualIncrease);
-  }
-  
-  const estReturns = principalBalance - totalInvested;
-  
-  return {
-    totalValue: Math.round(principalBalance),
-    totalInvested: Math.round(totalInvested),
-    estReturns: Math.round(estReturns),
-    returnPercentage: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
-    ratio: totalInvested > 0 ? +((estReturns / totalInvested) * 100).toFixed(2) : 0,
-    years: yearsToRetire,
-    monthlySalary,
-    annualIncreasePercent,
-    interestRate
-  };
-},
-
-    totalValueLabel: "ACCUMULATED BY RETIREMENT",
-    gainLabel: "RETURN %",
-    investedLabel: "Monthly Salary",
-    profitLabel: "Annual Increase",
-    formulaText: "This EPF calculator simulates monthly contributions with compound interest and annual salary increases until retirement at age 60.",
-    formulaLatex: "FV=P×r(1+r)n−1​",
-    formulaVars: "Contribution = Monthly salary × Contribution %, r = Annual interest rate",
-    useCases: [
-      "Planning retirement savings through EPF contributions.",
-      "Estimating EPF maturity amount with salary growth.",
-      "Understanding the impact of contribution percentage and salary increases."
-    ],
-    definitions: [
-      { title: "Monthly Salary (Basic+DA)", desc: "Your current monthly basic salary plus dearness allowance." },
-      { title: "Your Age", desc: "Your current age, used to calculate years until retirement at 60." },
-      { title: "Your Contribution (%)", desc: "The percentage of your salary contributed to EPF (typically 12% for employees)." },
-      { title: "Annual Increase in Salary (%)", desc: "Expected annual percentage increase in your salary." },
-      { title: "Rate of Interest (%)", desc: "Fixed annual interest rate of 8.25% compounded annually." },
-      { title: "Accumulated by Retirement", desc: "Total EPF balance at retirement including contributions and interest." }
     ]
   },
 "NSC Calculator": {
@@ -1197,8 +1103,8 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Amount Invested",
     profitLabel: "Total Interest",
     formulaText: "This NSC calculator uses compound interest formula with half-yearly compounding over 5 years:",
-    formulaLatex: "FV = P Ã— (1 + r/2)^(2 Ã— 5)",
-    formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate",
+    formulaLatex: "FV = P x (1+r)^n",
+    formulaVars: "FV = Future Value, P = Principal, r = Annual Interest Rate , n = Total Compounding Periods",
     useCases: [
       "Planning investments in National Savings Certificates.",
       "Estimating maturity value and interest earned.",
@@ -1310,7 +1216,7 @@ const CALC_CONFIGS: Record<string, any> = {
     investedLabel: "Take Home Annual Salary",
     profitLabel: "Total Monthly Deductions",
     formulaText: "This salary calculator computes take-home salary by deducting employee PF and professional tax from CTC plus bonus percentage.",
-    formulaLatex: "Take Home Monthly = ((CTC + (CTC \\times Bonus \\% / 100)) / 12) - (Professional Tax + Employee PF)",
+    formulaLatex: "Take Home Monthly = ((CTC + (CTC x Bonus% / 100)) / 12) - (Professional Tax + Employee PF)",
     formulaVars: "CTC = Cost to Company (annual), Bonus % = Bonus percentage of CTC, Professional Tax = Monthly deduction, Employee PF = Monthly deduction",
     useCases: [
       "Calculating net salary after deductions including bonus percentage.",
@@ -1333,7 +1239,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
 
-  const [v1, setV1] = useState<string>(String(config.def1 || config.min1));
+  // For SCSS Calculator, use min1 (initial position) instead of def1
+  const getInitialV1 = () => {
+    if (calculatorTitle === "SCSS Calculator") {
+      return String(config.min1);
+    }
+    return String(config.def1 || config.min1);
+  };
+
+  const [v1, setV1] = useState<string>(getInitialV1());
   const [v2, setV2] = useState<string>(String(config.def2 || config.min2));
   const [v3, setV3] = useState<string>(String(config.def3 || config.min3 || 0));
   const [v4, setV4] = useState<string>(String(config.def4 || config.min4 || 0));
@@ -1454,8 +1368,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         ? "This GST calculator calculates the Goods and Services Tax:"
         : "This GST calculator calculates the Goods and Services Tax for inclusive pricing:",
       formulaLatex: gstMode === 'exclusive'
-        ? "GST Amount = Price Ã— (GST Rate / 100)"
-        : "Original Price = Total Price / (1 + GST Rate / 100), GST Amount = Total Price - Original Price",
+        ? "GST Amount = Price x (GST Rate / 100)"
+        : "GST=(Price x GST Rate)/(100+GST Rate)​",
       formulaVars: gstMode === 'exclusive'
         ? "GST Amount = Tax amount, Price = Original price, GST Rate = Tax percentage, Total Price = Price including GST"
         : "Original Price = Price before GST, Total Price = Price including GST, GST Amount = Tax amount, GST Rate = Tax percentage"
@@ -1557,10 +1471,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                               ));
                             }}
                             onChange={(e) => {
-                              setShares(prevShares => prevShares.map((s, i) =>
-                                i === index ? { ...s, buyPrice: e.target.value } : s
-                              ));
+                              const val = e.target.value;
+                              // Limit to 7 digits for Buy Price
+                              if (val.length <= 7) {
+                                setShares(prevShares => prevShares.map((s, i) =>
+                                  i === index ? { ...s, buyPrice: val } : s
+                                ));
+                              }
                             }}
+                            maxLength={7}
+                            max={9999999}
                             className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm"
                             placeholder="0"
                           />
@@ -1576,10 +1496,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                               ));
                             }}
                             onChange={(e) => {
-                              setShares(prevShares => prevShares.map((s, i) =>
-                                i === index ? { ...s, quantity: e.target.value } : s
-                              ));
+                              const val = e.target.value;
+                              // Limit to 5 digits for Quantity
+                              if (val.length <= 5) {
+                                setShares(prevShares => prevShares.map((s, i) =>
+                                  i === index ? { ...s, quantity: val } : s
+                                ));
+                              }
                             }}
+                            maxLength={5}
+                            max={99999}
                             className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm"
                             placeholder="0"
                           />
@@ -1596,6 +1522,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 </div>
               ) : (
                 <>
+                  {/* SSY Rate Display */}
+                  {calc?.title === "SSY Calculator" && (
+                    <div className="mb-4 mt-2">
+                      <span className="text-sm text-black dark:text-white mr-122">
+                        Latest SSY Rate = 8.2%
+                      </span>
+                    </div>
+                  )}
+                  
                   {/* First Input */}
                   <div>
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 -mt-2">
@@ -1889,7 +1824,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         ) : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? (
           ""
         ) : (
-          <span className="ml-1 text-[12px] uppercase">Yrs</span>
+          <span className="ml-1 text-[12px] uppercase mt-[1px]">Yrs</span>
         )}
       </div>
     </div>
@@ -1909,17 +1844,21 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     
     <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
       <span>
-        {calc?.title === "HRA Calculator" 
-          ? config.min4.toLocaleString() 
-          : calc?.title === "EPF Calculator" 
-          ? `${config.min4}%` 
+        {calc?.title === "HRA Calculator"
+          ? config.min4.toLocaleString()
+          : calc?.title === "EPF Calculator"
+          ? `${config.min4}%`
+          : calc?.title === "Salary Calculator"
+          ? config.min4.toLocaleString()
           : `${config.min4} Yr`}
       </span>
       <span>
-        {calc?.title === "HRA Calculator" 
-          ? config.max4.toLocaleString() 
-          : calc?.title === "EPF Calculator" 
-          ? `${config.max4}%` 
+        {calc?.title === "HRA Calculator"
+          ? config.max4.toLocaleString()
+          : calc?.title === "EPF Calculator"
+          ? `${config.max4}%`
+          : calc?.title === "Salary Calculator"
+          ? config.max4.toLocaleString()
           : `${config.max4} Yrs`}
       </span>
     </div>

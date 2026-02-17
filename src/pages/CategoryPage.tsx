@@ -14,7 +14,7 @@ const CategoryPage: React.FC = () => {
     "students": ["Simple Interest", "Compound Interest"],
     "business": ["ROI", "GST" , "Salary Calculator", "Gratuity Calculator", "Inflation Calculator"],
     "schemes": ["NPS Calculator", "PPF Calculator", "SCSS Calculator", "SSY Calculator",  "Post Office MIS Calculator"],
-    "retirement": ["Retirement Planner", "NPS Calculator", "EPF Calculator"],
+    "retirement": ["Retirement Planner", "NPS Calculator"],
   };
 
   const categoryTitles: { [key: string]: string } = {
@@ -56,7 +56,6 @@ const headingToCalcTitle: { [key: string]: string } = {
   "SCSS Calculator": "SCSS Calculator",
   "SSY Calculator": "SSY Calculator",
   "Post Office MIS Calculator": "Post Office MIS Calculator",
-   "EPF Calculator": "EPF Calculator",       
 };
 
   const [selectedCalculator, setSelectedCalculator] = useState<string | null>(null);
