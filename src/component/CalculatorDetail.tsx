@@ -1653,9 +1653,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     ? "YRS"
                     : calc?.title === "EPF Calculator"
                     ? "Yr"
+                    : calc?.title === "PPF Calculator"
+                    ? "YRS"
                     : "%"}
           </span>
-          )}
+        )}
         </div>
       )}
     </div>
@@ -1679,12 +1681,12 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         <span>
           {config.min2.toLocaleString()}
           {!config.isV2Currency && calc?.title !== "Salary Calculator" && 
-          (calc?.title === "SSY Calculator" || calc?.title === "Gratuity Calculator" ? " YRS" : calc?.title === "EPF Calculator" ? " Yr" : "%")}
+          (calc?.title === "SSY Calculator" || calc?.title === "Gratuity Calculator" || calc?.title === "PPF Calculator" ? " YRS" : calc?.title === "EPF Calculator" ? " Yr" : "%")}
         </span>
         <span>
           {config.max2.toLocaleString()}
           {!config.isV2Currency && calc?.title !== "Salary Calculator" && 
-          (calc?.title === "SSY Calculator" || calc?.title === "Gratuity Calculator" ? " YRS" : calc?.title === "EPF Calculator" ? " Yr" : "%")}
+          (calc?.title === "SSY Calculator" || calc?.title === "Gratuity Calculator" || calc?.title === "PPF Calculator" ? " YRS" : calc?.title === "EPF Calculator" ? " Yr" : "%")}
         </span>
       </div>
     </>
