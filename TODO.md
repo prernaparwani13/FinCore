@@ -1,20 +1,12 @@
-# TODO List - Donut Chart Fix
+# TODO - Input Field Width Fix
 
-## Task: Fix Donut Chart in ROI, Stock Average Calculator, and Salary Calculator
+## Task
+Make all input fields have the same fixed width across every calculator with a clean conditional on calculator type.
 
-### Steps:
-- [x] 1. Fix Stock Average Calculator - Add logic to show meaningful donut or hide it
-- [x] 2. Fix Salary Calculator - Ensure proper ratio calculation with edge case handling
-- [x] 3. Fix ROI Calculator - Ensure proper handling of profit/loss scenarios
-- [x] 4. Add check to show donut chart at initial position when ratio is 0 or invalid
+## Steps:
+1. [ ] Update AutoResizeInput.tsx to accept a calculatorType prop and apply consistent width
+2. [ ] Update CalculatorDetail.tsx to pass calculator type and use consistent minWidth for all inputs
 
-### Changes made in src/component/CalculatorDetail.tsx:
-1. Updated Stock Average Calculator config:
-   - Added `hasDonutChart: true` flag to show donut chart
-   - Modified calculate function to return `displayRatio` (50 when has data, 0 when no data)
-   - Donut now shows 50% filled when user enters data, empty (0%) when no data
-2. Verified Salary Calculator ratio calculation - it correctly calculates deductions as percentage of gross salary
-3. Verified ROI Calculator - uses Math.abs(ratio) in offset calculation, handles negative values
-4. Donut chart shows at initial position (empty) when ratio is 0
-
-### Status: Completed
+## Implementation Approach:
+- Add a helper function that returns consistent minWidth based on calculator type
+- Apply the same width to all input fields across all calculators

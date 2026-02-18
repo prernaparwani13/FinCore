@@ -49,9 +49,13 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({
   {category}
 </span>
 
-        <span className="text-[10px] font-bold text-slate-400 uppercase">
-          Free
-        </span>
+        <span className="inline-block text-[10px] font-bold uppercase
+bg-slate-50 dark:bg-slate-800
+text-slate-500 dark:text-slate-300
+px-2 py-1 rounded-md">
+  Free Tool
+</span>
+
       </div>
     </div>
   );

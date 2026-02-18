@@ -5,6 +5,7 @@ import {
   FileText, Zap, CircleCheck
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import AutoResizeInput from './AutoResizeInput';
 
 interface Calc {
   title: string;
@@ -1383,14 +1384,22 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={onBack} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 hover:border-blue-500 cursor-pointer flex items-center justify-center transition-all"
+              className="w-10 h-10 sm:w-10 sm:h-10 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 hover:border-blue-500 cursor-pointer flex items-center justify-center transition-all -mt-[20px]"
             >
               <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
             </button>
             <div className="flex flex-col items-start text-left">
-              <div className="text-blue-600 dark:text-blue-400 text-[10px] sm:text-[14px] font-semibold uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1 -mt-[20px]">
+              <div className="inline-block 
+bg-blue-50 
+text-blue-600 
+font-sans font-bold 
+uppercase tracking-wider 
+px-1 py-0 
+rounded-md -mt-[22px]">
   {calc?.category || "INVESTMENT"}
 </div>
+
+
 
               <h1 className="text-xl sm:text-2xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
   {calc?.title || "Calculator"}
@@ -1422,7 +1431,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         value="exclusive"
                         checked={gstMode === 'exclusive'}
                         onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-blue-600 focus:ring-blue-500 accent-blue-600"
                       />
                       <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Exclusive</span>
                     </label>
@@ -1433,7 +1442,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         value="inclusive"
                         checked={gstMode === 'inclusive'}
                         onChange={(e) => setGstMode(e.target.value as 'exclusive' | 'inclusive')}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-blue-600 focus:ring-blue-500 accent-blue-600"
                       />
                       <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Inclusive</span>
                     </label>
@@ -1524,7 +1533,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   {/* SSY Rate Display */}
 {calc?.title === "SSY Calculator" && (
                     <div className="mb-4 mt-2">
-                      <span className="text-sm text-black dark:text-white mr-122">
+                      <span className="text-sm font-bold text-slate-600 dark:text-slate-400">
                         Latest SSY Rate = 8.5%
                       </span>
                     </div>
@@ -1536,31 +1545,36 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
       {config.label1}
     </label>
-    <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-      <input
-        type="number"
-        value={v1}
-        onChange={(e) => {
-          const val = e.target.value;
-          if (val === '') {
-            setV1(''); // Allow empty for typing
-          } else {
-            const numVal = Number(val);
-            if (numVal > config.max1) setV1(String(config.max1));
-            else setV1(val);
-          }
-          setHasInteracted(true);
-        }}
-        onBlur={() => {
-          // If empty or invalid on exit, snap to min
-          if (v1 === '' || isNaN(Number(v1)) || Number(v1) < config.min1) {
-            setV1(String(config.min1));
-          }
-        }}
-className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 text-right"
-      />
-      <span className="ml-1">{isINR ? '₹' : '$'}</span>
-    </div>
+    {/* Added 'w-32' for uniform width and 'justify-center' to keep things neat */}
+<div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+  <AutoResizeInput
+    value={v1}
+    onChange={(val) => {
+      if (val === '') {
+        setV1(''); 
+      } else {
+        const numVal = Number(val);
+        // Safety check: if the input isn't a valid number, don't update (prevents NaN)
+        if (!isNaN(numVal)) {
+          if (numVal > config.max1) setV1(String(config.max1));
+          else setV1(val);
+        }
+      }
+      setHasInteracted(true);
+    }}
+    onBlur={() => {
+      const numVal = Number(v1);
+      // Enhanced validation on exit
+      if (v1 === '' || isNaN(numVal) || numVal < config.min1) {
+        setV1(String(config.min1));
+      }
+    }}
+    prefix={isINR ? '₹' : '$'}
+    /* Added these to ensure the input centers itself inside the fixed div */
+    className="text-center outline-none bg-transparent w-full"
+    minWidth="20px" 
+  />
+</div>
   </div>
 
   {config.min1 !== config.max1 && (
@@ -1595,48 +1609,53 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
         {config.label2}
       </label>
 
-      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-        {(config.isV2Currency || calc?.title === "HRA Calculator") && (
-          <span className="mr-1">{isINR ? '₹' : '$'}</span>
-        )}
+      {/* For SCSS Calculator, show fixed tenure as text instead of input */}
+      {calc?.title === "SCSS Calculator" ? (
+        <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <span className="text-right">5 YRS</span>
+        </div>
+      ) : (
+                  <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            {(config.isV2Currency || calc?.title === "HRA Calculator") && (
+              <span className="mr-1">{isINR ? '₹' : '$'}</span>
+            )}
 
-        <input
-          type="number"
-          value={v2}
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val === '' || val === '-') {
-              setV2(val); // Allow empty for typing
-            } else {
-              const numVal = Number(val);
-              // Clamp only the upper bound during typing
-              if (numVal > config.max2) setV2(String(config.max2));
-              else setV2(val);
-            }
-          }}
-          onBlur={() => {
-            // Safety reset on exit
-            if (v2 === '' || isNaN(Number(v2)) || Number(v2) < config.min2) {
-              setV2(String(config.def2 || config.min2));
-            }
-          }}
-          className="bg-transparent w-14  outline-none border-none p-0 -px-1 focus:ring-0 text-right"
+            <input
+              type="number"
+              value={v2}
+            onChange={(e) => {
+              const val = e.target.value;
+                if (val === '' || val === '-') {
+                  setV2(val); // Allow empty for typing
+                } else {
+                  const numVal = Number(val);
+                  // Clamp only the upper bound during typing
+                  if (numVal > config.max2) setV2(String(config.max2));
+                  else setV2(val);
+                }
+              }}
+              onBlur={() => {
+                // Safety reset on exit
+                if (v2 === '' || isNaN(Number(v2)) || Number(v2) < config.min2) {
+                  setV2(String(config.def2 || config.min2));
+                }
+              }}
+              className="bg-transparent w-14  outline-none border-none p-0 -px-1 focus:ring-0 text-right"
         />
 
         {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
           <span className="ml-1">
 {calc?.title === "SSY Calculator"
-              ? "YRS"
-              : calc?.title === "Gratuity Calculator"
-              ? "YRS"
-              : calc?.title === "EPF Calculator"
-              ? "Yr"
-              : calc?.title === "SCSS Calculator"
-              ? "YRS"
-              : "%"}
+                    ? "YRS"
+                    : calc?.title === "Gratuity Calculator"
+                    ? "YRS"
+                    : calc?.title === "EPF Calculator"
+                    ? "Yr"
+                    : "%"}
           </span>
         )}
       </div>
+      )}
     </div>
   )}
 
@@ -1679,9 +1698,7 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
                 <div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">Time Period</label>
-                    <div className="flex items-center bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 px-6 py-2 rounded-lg font-black text-sm border border-gray-100 dark:border-gray-800/50">
-                      <span className="text-right ">5 Years</span>
-                    </div>
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400">5 Years</span>
                   </div>
                 </div>
               )}
@@ -1715,12 +1732,16 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
           </select>
         )}
         {calc?.title === "PPF Calculator" ? (
-          <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             <span className="text-right">7.1%</span>
+          </div>
+        ) : calc?.title === "SCSS Calculator" ? (
+          <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            <span className="text-right">8.2%</span>
           </div>
         ) : (
           calc?.title !== "NSC Calculator" && (
-            <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
               {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
                 <span className="mr-1">{isINR ? "₹" : "$"}</span>
               )}
@@ -1728,7 +1749,7 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
                 type="number"
                 value={v3}
                 onChange={(e) => {
-                  const val = e.target.value;
+const val = e.target.value;
                   if (val === "" || val === "-") {
                     setV3(val); // Allow empty for typing
                   } else {
@@ -1792,15 +1813,10 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label4}
       </label>
-      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-        {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
-          <span className="mr-1">{isINR ? '₹' : '$'}</span>
-        )}
-        <input
-          type="number"
+      <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+        <AutoResizeInput
           value={v4}
-          onChange={(e) => {
-            const val = e.target.value;
+          onChange={(val) => {
             if (val === '' || val === '-') {
               setV4(val); // Allow empty so user can type
             } else {
@@ -1816,15 +1832,16 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
               setV4(String(config.def4 || config.min4));
             }
           }}
-          className="bg-transparent w-15 outline-none border-none p-0 focus:ring-0 text-right"
+          prefix={(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") ? (isINR ? '₹' : '$') : ''}
+          suffix={
+            calc?.title === "EPF Calculator" 
+              ? "%" 
+              : (calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" 
+                ? "" 
+                : "Yrs")
+          }
+          minWidth="40px"
         />
-        {calc?.title === "EPF Calculator" ? (
-          <span className="ml-1 text-[12px] uppercase">%</span>
-        ) : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? (
-          ""
-        ) : (
-          <span className="ml-1 text-[12px] uppercase mt-[2px]">Yrs</span>
-        )}
       </div>
     </div>
     
@@ -1868,39 +1885,35 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
               {/* Fifth Input (for EPF, Salary Calculator) */}
               {config.hasFifthSlider && (
   <div>
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-4">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center -mb-1 mt-2">
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label5}
       </label>
-      <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
         {calc?.title === "EPF Calculator" ? (
           <span className="text-right">{config.def5}%</span>
         ) : (
-          <>
-            <span className="mr-1">{isINR ? '₹' : '$'}</span>
-            <input
-              type="number"
-              value={v5}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '' || val === '-') {
-                  setV5(val); // Allow empty for typing
-                } else {
-                  const numVal = Number(val);
-                  // Clamp only the upper bound while typing
-                  if (numVal > config.max5) setV5(String(config.max5));
-                  else setV5(val);
-                }
-              }}
-              onBlur={() => {
-                // Safety reset to default or min on exit
-                if (v5 === '' || isNaN(Number(v5)) || Number(v5) < config.min5) {
-                  setV5(String(config.def5 || config.min5));
-                }
-              }}
-              className="bg-transparent w-15 outline-none border-none p-0 focus:ring-0 text-right"
-            />
-          </>
+          <AutoResizeInput
+            value={v5}
+            onChange={(val) => {
+              if (val === '' || val === '-') {
+                setV5(val); // Allow empty for typing
+              } else {
+                const numVal = Number(val);
+                // Clamp only the upper bound while typing
+                if (numVal > config.max5) setV5(String(config.max5));
+                else setV5(val);
+              }
+            }}
+            onBlur={() => {
+              // Safety reset to default or min on exit
+              if (v5 === '' || isNaN(Number(v5)) || Number(v5) < config.min5) {
+                setV5(String(config.def5 || config.min5));
+              }
+            }}
+            prefix={isINR ? '₹' : '$'}
+             minWidth="40px"
+          />
         )}
       </div>
     </div>
@@ -2115,23 +2128,23 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
                     </div>
                   </>
                 ) : calc?.title === "EPF Calculator" ? (
-                  <>
-                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-slate-300" />
-                        <span className="text-xs font-bold text-slate-500">Monthly Salary</span>
+                    <>
+                      <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-slate-300" />
+                          <span className="text-xs font-bold text-slate-500">Monthly Salary</span>
+                        </div>
+                        <span className="text-sm font-black">{formatCurrency(results.monthlySalary)}</span>
                       </div>
-                      <span className="text-sm font-black">{formatCurrency(results.monthlySalary)}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span className="text-xs font-bold text-slate-500">Annual Increase</span>
+                      <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                          <span className="text-xs font-bold text-slate-500">Annual Increase</span>
+                        </div>
+                        <span className="text-sm font-black text-blue-600">{results.annualIncreasePercent}%</span>
                       </div>
-                      <span className="text-sm font-black text-blue-600">{results.annualIncreasePercent}%</span>
-                    </div>
-                  </>
-                ) : calc?.title === "Salary Calculator" ? (
+                    </>
+                  ) : calc?.title === "Salary Calculator" ? (
                   <>
                     <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
@@ -2142,10 +2155,10 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
                     </div>
                     <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
                         <span className="text-xs font-bold text-slate-500">Total Monthly Deductions</span>
                       </div>
-                      <span className="text-sm font-black text-green-600">{formatCurrency(results.totalMonthlyDeductions)}</span>
+                      <span className="text-sm font-black text-amber-500">{formatCurrency(results.totalMonthlyDeductions)}</span>
                     </div>
                     <div className="flex justify-between items-center p-4  bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
@@ -2211,9 +2224,9 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
         </div>
 
         {/* Info Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 -mt-[25px]">
           <div className="space-y-6 md:space-y-8">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 text-left">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 text-left -mr-[105px] ">
               <h3 className="font-bold mb-4 flex items-center gap-3">
                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg"><BookOpen size={18} className="text-blue-600" /></div>
                 Calculation Formula
@@ -2231,7 +2244,7 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
               </p>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 text-left">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 text-left -mr-[105px]">
               <h3 className="font-bold mb-6 flex items-center gap-3">
                 <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"><Zap size={18} className="text-emerald-600" /></div>
                 Best Use Cases
@@ -2247,7 +2260,7 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-10 border border-slate-100 dark:border-slate-800 text-left">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-10 border border-slate-100 dark:border-slate-800 text-left ml-[105px]">
             <h3 className="font-bold mb-8 flex items-center gap-3">
               <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg"><FileText size={18} className="text-indigo-600" /></div>
               Definitions
@@ -2255,7 +2268,7 @@ className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 t
             <div className="space-y-8 text-left">
               {config.definitions && config.definitions.map((term: { title: string; desc: string }, i: number) => (
                 <div key={i}>
-                  <p className="font-black text-blue-600 dark:text-blue-400 text-sm mb-2 uppercase tracking-wide text-left">{term.title}</p>
+                  <p className="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2 uppercase tracking-wide text-left">{term.title}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{term.desc}</p>
                 </div>
               ))}

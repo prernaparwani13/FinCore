@@ -133,7 +133,7 @@ const [activeButton, setActiveButton] = useState<string | null>(null);
           {plan.features.map((feature) => (
             <div key={feature} className="flex items-start gap-3">
               <Check size={12} className="text-blue-600 mt-1" />
-              <span className="text-sm text-slate-500">{feature}</span>
+              <span className="text-sm text-slate-900 dark:text-slate-100">{feature}</span>
             </div>
           ))}
         </div>
@@ -163,22 +163,22 @@ const [activeButton, setActiveButton] = useState<string | null>(null);
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {comparisonFeatures.map((feature, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="p-8 text-[14px] font-medium text-slate-700 dark:text-slate-400">
+                    <td className="p-8 text-[14px] font-medium text-slate-700 dark:text-slate-100">
                       {feature.name}
                     </td>
                     
                     {/* Basic Column */}
-                    <td className={`p-8 text-center text-[13px] text-slate-400 transition-colors duration-300 ${selectedCard === 'Basic' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
+                    <td className={`p-8 text-center text-[13px] text-slate-400 dark:text-slate-100 transition-colors duration-300 ${selectedCard === 'Basic' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
                       {renderCell(feature.basic)}
                     </td>
 
 {/* Pro Column */}
-                    <td className={`p-8 text-center text-[13px] text-slate-500 dark:text-slate-400 transition-colors duration-300 ${selectedCard === 'Pro' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
+                    <td className={`p-8 text-center text-[13px] text-slate-500  dark:text-slate-100 transition-colors duration-300 ${selectedCard === 'Pro' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
                       {renderCell(feature.pro)}
                     </td>
 
                     {/* Team Column */}
-                    <td className={`p-8 text-center text-[13px] text-slate-500 dark:text-slate-400 transition-colors duration-300 ${selectedCard === 'Team' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
+                    <td className={`p-8 text-center text-[13px] text-slate-500 dark:text-slate-100 transition-colors duration-300 ${selectedCard === 'Team' ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}>
                       {renderCell(feature.team)}
                     </td>
                   </tr>

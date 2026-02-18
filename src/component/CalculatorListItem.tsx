@@ -25,9 +25,17 @@ const CalculatorListItem: React.FC<CalculatorListItemProps> = ({
       {/* Left Section: Icon & Text */}
       <div className="flex items-center gap-4 sm:gap-6 pointer-events-none">
         {/* Icon: Scales slightly from mobile to desktop */}
-        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-          {icon}
-        </div>
+        <div className="w-12 h-12 sm:w-14 sm:h-14 
+bg-blue-50 dark:bg-slate-800 
+rounded-xl flex items-center justify-center 
+text-xl sm:text-2xl 
+text-blue-600 dark:text-blue-400
+flex-shrink-0 
+group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 
+transition-colors">
+  {icon}
+</div>
+
         
         <div className="flex-grow min-w-0">
           {/* Title: Truncates on very small screens to prevent layout break */}
