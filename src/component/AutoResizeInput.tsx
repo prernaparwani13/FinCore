@@ -126,25 +126,34 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
       />
       
       {/* Prefix */}
-      {prefix && (
+      {/* {prefix && (
         <span className="text-blue-600 dark:text-blue-400 font-black text-sm mr-0.5">
           {prefix}
         </span>
-      )}
+      )} */}
       
       {/* Input */}
-      <input
-        ref={inputRef}
-        type={type === 'number' ? 'text' : type}
-        inputMode={type === 'number' ? 'decimal' : 'text'}
-        value={value}
-        onChange={handleChange}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        style={{ width: inputWidth, minWidth: minWidth }}
-        className="bg-transparent outline-none border-none p-0 focus:ring-0 text-right font-black text-sm text-blue-600 dark:text-blue-400 "
-      />
+     <div className="flex items-center">
+  <span className="text-sm font-black text-blue-600 dark:text-blue-400 mr-1">
+    $
+  </span>
+
+  <input
+    ref={inputRef}
+    type={type === 'number' ? 'text' : type}
+    inputMode={type === 'number' ? 'decimal' : 'text'}
+    value={value}
+    onChange={handleChange}
+    onBlur={onBlur}
+    placeholder={placeholder}
+    maxLength={maxLength}
+    style={{ width: inputWidth, minWidth: minWidth }}
+    className="bg-transparent outline-none border-none p-0 focus:ring-0 
+               text-left font-black text-sm 
+               text-blue-600 dark:text-blue-400"
+  />
+</div>
+
       
       {/* Suffix */}
       {suffix && (

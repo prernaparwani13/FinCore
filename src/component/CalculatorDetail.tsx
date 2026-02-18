@@ -1617,7 +1617,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           <span className="text-right">5 YRS</span>
         </div>
       ) : (
-                  <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+                  <div className="flex items-start justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             {(config.isV2Currency || calc?.title === "HRA Calculator") && (
               <span className="mr-1">{isINR ? '₹' : '$'}</span>
           )}
@@ -1719,7 +1719,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           <select
             value={timeUnit}
             onChange={(e) => setTimeUnit(e.target.value)}
-            className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold border border-blue-100 dark:border-blue-800/50"
+            className="px-2.5 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold border border-blue-100 dark:border-blue-800/50"
           >
             <option value="Years">Years</option>
             <option value="Months">Months</option>
@@ -1736,16 +1736,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           </select>
         )}
         {calc?.title === "PPF Calculator" ? (
-          <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <div className="flex items-center justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             <span className="text-right">7.1%</span>
           </div>
         ) : calc?.title === "SCSS Calculator" ? (
-          <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <div className="flex items-center justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             <span className="text-right">8.2%</span>
           </div>
         ) : (
           calc?.title !== "NSC Calculator" && (
-            <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            <div className="flex items-center justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
               {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
                 <span className="mr-1">{isINR ? "₹" : "$"}</span>
               )}
@@ -1817,7 +1817,7 @@ const val = e.target.value;
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label4}
       </label>
-      <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <div className="flex items-center justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
         <AutoResizeInput
           value={v4}
           onChange={(val) => {
@@ -1893,7 +1893,7 @@ const val = e.target.value;
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label5}
       </label>
-      <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <div className="flex items-center justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
         {calc?.title === "EPF Calculator" ? (
           <span className="text-right">{config.def5}%</span>
         ) : (
