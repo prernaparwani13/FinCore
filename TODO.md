@@ -1,12 +1,27 @@
-# TODO - Input Field Width Fix
+# TODO: Convert all suffixes to prefixes in CalculatorDetail.tsx
 
 ## Task
-Make all input fields have the same fixed width across every calculator with a clean conditional on calculator type.
+All Input field prefixes/suffixes should be aligned on the LEFT side (prefixes). Currently some inputs have suffixes like "%", "YRS", "Yr" which need to be converted to prefixes.
 
-## Steps:
-1. [ ] Update AutoResizeInput.tsx to accept a calculatorType prop and apply consistent width
-2. [ ] Update CalculatorDetail.tsx to pass calculator type and use consistent minWidth for all inputs
+## Changes Needed
 
-## Implementation Approach:
-- Add a helper function that returns consistent minWidth based on calculator type
-- Apply the same width to all input fields across all calculators
+### 1. Second Input Section (label2)
+- Current: suffix "%" or "YRS" or "Yr"
+- Change to: prefix "%" or "YRS" or "Yr"
+
+### 2. Third Input Section (label3)
+- Current: suffix "Yrs", "%" 
+- Change to: prefix "YRS", "%"
+
+### 3. Fourth Input Section (label4)
+- Current: suffix "%" for EPF, "Yrs" for SWP
+- Change to: prefix "%", "YRS"
+
+### 4. Fifth Input Section (label5)
+- Already has prefix, should be fine
+
+## Files to Edit
+- src/component/CalculatorDetail.tsx - Convert suffixes to prefixes in multiple input sections
+
+## Follow-up Steps
+- Test the changes in browser to verify all prefixes appear on the left

@@ -143,7 +143,7 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
         placeholder={placeholder}
         maxLength={maxLength}
         style={{ width: inputWidth, minWidth: minWidth }}
-        className="bg-transparent outline-none border-none p-0 focus:ring-0 text-right font-black text-sm text-blue-600 dark:text-blue-400 "
+        className="bg-transparent outline-none border-none p-0 focus:ring-0 text-right font-black text-sm text-blue-600 dark:text-blue-400 -ml-[24px]"
       />
       
       {/* Suffix */}

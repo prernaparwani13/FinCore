@@ -401,7 +401,7 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "Auto Loan": {
     type: 'loan',
-    label1: "Loan Amount", min1: 100000, max1: 10000000, step1: 500, def1: 5000,
+    label1: "Loan Amount", min1: 100000, max1: 10000000, step1: 500, def1: 100000,
     label2: "Interest Rate", min2: 0.1, max2: 20, step2: 0.1, def2: 0.1,
     label3: "Loan Term", min3: 1, max3: 7, step3: 1, def3: 1,
     hasThirdSlider: true,
@@ -1390,14 +1390,16 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             </button>
             <div className="flex flex-col items-start text-left">
               <div className="inline-block 
-bg-blue-50 
-text-blue-600 
-font-sans font-bold 
-uppercase tracking-wider 
-px-1 py-0 
-rounded-md -mt-[22px]">
+  bg-blue-50 dark:bg-slate-900 
+  text-blue-500 dark:text-blue-300
+  font-sans font-bold 
+  text-[13px] 
+  uppercase tracking-wider 
+  px-2 py-1  
+  rounded-md -mt-[22px]">
   {calc?.category || "INVESTMENT"}
 </div>
+
 
 
 
@@ -1546,7 +1548,7 @@ rounded-md -mt-[22px]">
       {config.label1}
     </label>
     {/* Added 'w-32' for uniform width and 'justify-center' to keep things neat */}
-<div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+<div className="flex items-center justify-center w-26  bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
   <AutoResizeInput
     value={v1}
     onChange={(val) => {
@@ -1618,30 +1620,30 @@ rounded-md -mt-[22px]">
                   <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             {(config.isV2Currency || calc?.title === "HRA Calculator") && (
               <span className="mr-1">{isINR ? '₹' : '$'}</span>
-            )}
+          )}
 
-            <input
-              type="number"
-              value={v2}
+          <input
+            type="number"
+            value={v2}
             onChange={(e) => {
               const val = e.target.value;
-                if (val === '' || val === '-') {
-                  setV2(val); // Allow empty for typing
-                } else {
-                  const numVal = Number(val);
-                  // Clamp only the upper bound during typing
-                  if (numVal > config.max2) setV2(String(config.max2));
-                  else setV2(val);
-                }
-              }}
-              onBlur={() => {
-                // Safety reset on exit
-                if (v2 === '' || isNaN(Number(v2)) || Number(v2) < config.min2) {
-                  setV2(String(config.def2 || config.min2));
-                }
-              }}
-              className="bg-transparent w-14  outline-none border-none p-0 px-1 focus:ring-0 text-right"
-        />
+              if (val === '' || val === '-') {
+                setV2(val); // Allow empty for typing
+              } else {
+                const numVal = Number(val);
+                // Clamp only the upper bound during typing
+                if (numVal > config.max2) setV2(String(config.max2));
+                else setV2(val);
+              }
+            }}
+            onBlur={() => {
+              // Safety reset on exit
+              if (v2 === '' || isNaN(Number(v2)) || Number(v2) < config.min2) {
+                setV2(String(config.def2 || config.min2));
+              }
+            }}
+            className="bg-transparent w-16 outline-none border-none p-0 px-1 focus:ring-0 text-right"
+          />
 
         {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
           <span className="mr-2">
@@ -1653,8 +1655,8 @@ rounded-md -mt-[22px]">
                     ? "Yr"
                     : "%"}
           </span>
-        )}
-      </div>
+          )}
+        </div>
       )}
     </div>
   )}
@@ -1732,16 +1734,16 @@ rounded-md -mt-[22px]">
           </select>
         )}
         {calc?.title === "PPF Calculator" ? (
-          <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             <span className="text-right">7.1%</span>
           </div>
         ) : calc?.title === "SCSS Calculator" ? (
-          <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+          <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             <span className="text-right">8.2%</span>
           </div>
         ) : (
           calc?.title !== "NSC Calculator" && (
-            <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+            <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
               {(calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator") && (
                 <span className="mr-1">{isINR ? "₹" : "$"}</span>
               )}
@@ -1813,7 +1815,7 @@ const val = e.target.value;
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label4}
       </label>
-      <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
         <AutoResizeInput
           value={v4}
           onChange={(val) => {
@@ -1889,7 +1891,7 @@ const val = e.target.value;
       <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">
         {config.label5}
       </label>
-      <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+      <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
         {calc?.title === "EPF Calculator" ? (
           <span className="text-right">{config.def5}%</span>
         ) : (
