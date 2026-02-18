@@ -1617,7 +1617,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           <span className="text-right">5 YRS</span>
         </div>
       ) : (
-                  <div className="flex items-center justify-center w-22 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
+                  <div className="flex items-center justify-center w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
             {(config.isV2Currency || calc?.title === "HRA Calculator") && (
               <span className="mr-1">{isINR ? '₹' : '$'}</span>
           )}
@@ -2020,7 +2020,7 @@ const val = e.target.value;
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Average Price</span>
                       </div>
-                      <span className="text-sm font-black text-blue-600">{formatCurrency(results.averagePrice)}</span>
+                      <span className="text-sm font-black text-blue-600 ">{formatCurrency(results.averagePrice)}</span>
                     </div>
                     <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
