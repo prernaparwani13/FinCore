@@ -32,21 +32,23 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({
 
       <div className="flex-grow">
        
-        <h3 className="text-base sm:text-lg font-black text-slate-800 dark:text-white mb-1 tracking-tight text-left line-clamp-1">
-          {title}
-        </h3>
+        <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-white mb-1 tracking-tight text-left line-clamp-1">
+  {title}
+</h3>
+
         
         
-        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed line-clamp-2 text-left">
+        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-normal leading-relaxed line-clamp-2 text-left">
           {description}
         </p>
       </div>
 
-      <div className="mt-4 flex justify-between items-center pt-3 border-t border-slate-50 dark:border-slate-800/50">
+      <div className="mt-4 flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-800/50">
        
-        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
-          {category}
-        </span>
+        <span className="text-[10px] font-bold font-sans uppercase tracking-widest text-blue-600">
+  {category}
+</span>
+
         <span className="text-[10px] font-bold text-slate-400 uppercase">
           Free
         </span>

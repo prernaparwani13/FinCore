@@ -48,9 +48,11 @@ const CalculatorListItem: React.FC<CalculatorListItemProps> = ({
         </span>
         
         {/* Visual Indicator: Arrow moves right on hover */}
-        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-300 dark:text-slate-500 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 group-hover:translate-x-1 transition-all">
-          <ChevronRight size={18} className="sm:w-5 sm:h-5" />
-        </div>
+     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 transition-colors duration-200">
+  <ChevronRight size={18} className="sm:w-5 sm:h-5" />
+</div>
+
+
       </div>
     </div>
   );

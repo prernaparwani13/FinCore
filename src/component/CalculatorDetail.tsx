@@ -400,7 +400,7 @@ const CALC_CONFIGS: Record<string, any> = {
   },
   "Auto Loan": {
     type: 'loan',
-    label1: "Loan Amount", min1: 5000, max1: 150000, step1: 500, def1: 5000,
+    label1: "Loan Amount", min1: 100000, max1: 10000000, step1: 500, def1: 5000,
     label2: "Interest Rate", min2: 0.1, max2: 20, step2: 0.1, def2: 0.1,
     label3: "Loan Term", min3: 1, max3: 7, step3: 1, def3: 1,
     hasThirdSlider: true,
@@ -711,57 +711,58 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Value", desc: "Maturity value including principal and interest." }
     ]
   },
-  "SSY Calculator": {
+"SSY Calculator": {
     label1: "Yearly Investment", min1: 250, max1: 150000, step1: 5000, def1: 250,
-    label2: "Girl's Age", min2: 1, max2: 10, step2: 1, def2: 0,
+    label2: "Girl's Age", min2: 0, max2: 10, step2: 1, def2: 0,
     label3: "Start Year", min3: 2021, max3: 2030, step3: 1, def3: 2021,
 
     hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (yearly: number, age: number, startYear: number) => {
-  const annualRate = 0.082;
-  const monthlyRate = annualRate / 12;
+  calculate: (yearly:number, age:number, startYear:number) => {
+  // 1. Current official SSY interest rate (8.2%)
+  const rate = 0.082;
+  
+  // 2. SSY Rules: 
+  // Contribution Period: 15 years from start
+  // Maturity Period: 21 years from start
+  const contributionPeriod = 15;
+  const maturityPeriod = 21;
 
-  const depositYears = 15;
-  const maturityYears = 21;
+  // Validation: SSY is only for girls aged 10 or below
+  if (age > 10) return { error: "Girl must be 10 years or younger." };
 
   let balance = 0;
-  let totalInvested = yearly * depositYears;
+  let totalInvested = 0;
 
-  for (let year = 1; year <= maturityYears; year++) {
-    // 1️⃣ Deposit at START of the year (only first 15 years)
-    if (year <= depositYears) {
+  for (let year = 1; year <= maturityPeriod; year++) {
+    // Add deposit at the START of the year (only for first 15 years)
+    if (year <= contributionPeriod) {
       balance += yearly;
+      totalInvested += yearly;
     }
 
-    // 2️⃣ Calculate monthly interest but DO NOT compound monthly
-    let yearlyInterest = 0;
-    for (let month = 1; month <= 12; month++) {
-      yearlyInterest += balance * monthlyRate;
-    }
-
-    // 3️⃣ Credit interest ONCE per year
-    balance += yearlyInterest;
-
-    // 4️⃣ Yearly rounding (VERY IMPORTANT)
-    balance = Math.round(balance);
+    // Apply interest at the END of the year (Annual Compounding)
+    // Interest = (Balance * Rate) rounded to nearest whole number
+    let annualInterest = (balance * rate);
+    balance += annualInterest;
   }
 
-  const maturityValue = balance;
+  const maturityValue = Math.round(balance);
   const totalInterest = maturityValue - totalInvested;
+  const maturityYear = startYear + maturityPeriod;
 
   return {
     totalValue: maturityValue,
     totalInvested,
     estReturns: totalInterest,
     maturityValue,
-    maturityYear: startYear + maturityYears,
-    returnPercentage: +((totalInterest / totalInvested) * 100).toFixed(2),
-    ratio: +((totalInterest / totalInvested) * 100).toFixed(2)
+    maturityYear,
+    returnPercentage: totalInvested > 0 ? +((totalInterest / totalInvested) * 100).toFixed(2) : 0,
+    ratio: totalInvested > 0 ? +((totalInterest / totalInvested)).toFixed(2) : 0,
   };
 },
 
-    totalValueLabel: "QUARTERLY RECEIVABLE INTEREST",
+    totalValueLabel: "Maturity Value",
     gainLabel: "RETURN %",
     investedLabel: "Total Investment",
     profitLabel: "Total Interest",
@@ -811,14 +812,10 @@ const CALC_CONFIGS: Record<string, any> = {
     actualWithdrawals += withdrawPerMonth;
 
     // 2. Interest is earned on the REMAINING balance
-    currentBalance += currentBalance * monthlyRate;
+    currentBalance = currentBalance * (1 + monthlyRate);
 
-    // 3. If balance hits zero, undo the last withdrawal and stop
-    if (currentBalance < 0) {
-      currentBalance = 0;
-      actualWithdrawals -= withdrawPerMonth;
-      break;
-    }
+    // 3. Allow negative values - don't cap at zero anymore
+    // This allows the final value to display negative when withdrawals exceed the investment + returns
   }
 
   const finalValue = Math.round(currentBalance);
@@ -835,8 +832,8 @@ const CALC_CONFIGS: Record<string, any> = {
   };
 },
     totalValueLabel: "TOTAL WITHDRAWAL",
-    investedLabel: "Total Investment",
-    profitLabel: "Final value",
+    investedLabel: "Final Value",
+    profitLabel: "Total Investment",
     formulaText: "This SWP calculator simulates monthly withdrawals from an investment with compound interest over a specified time period.",
     formulaLatex: "Balance = (Balance x (1 + r)) - W",
     formulaVars: "Balance = Current balance, r = Monthly interest rate, W = Monthly withdrawal, Time period = Specified years",
@@ -846,12 +843,12 @@ const CALC_CONFIGS: Record<string, any> = {
       "Understanding the impact of withdrawal amounts and time horizons on investment longevity."
     ],
     definitions: [
-      { title: "Total Investment", desc: "The initial lump sum amount invested." },
+      { title: "Final Value", desc: "The initial lump sum amount invested." },
       { title: "Withdraw per month", desc: "The fixed amount withdrawn every month." },
       { title: "Expected return rate", desc: "The anticipated annual growth rate of the investment." },
       { title: "Time period", desc: "The number of years over which withdrawals will be made." },
       { title: "Total Withdrawal", desc: "The total amount withdrawn over the specified period." },
-      { title: "Final Value", desc: "The remaining balance after the specified time period." }
+      { title: "Total Investment", desc: "The remaining balance after the specified time period." }
     ]
   },
   "PPF Calculator": {
@@ -1391,12 +1388,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
             </button>
             <div className="flex flex-col items-start text-left">
-              <div className="text-blue-600 dark:text-blue-400 text-[10px] sm:text-[14px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1 mt-5">
-                {calc?.category || "INVESTMENT"}
-              </div>
-              <h1 className="text-xl sm:text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                {calc?.title || "Calculator"}
-              </h1>
+              <div className="text-blue-600 dark:text-blue-400 text-[10px] sm:text-[14px] font-semibold uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1 -mt-[20px]">
+  {calc?.category || "INVESTMENT"}
+</div>
+
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+  {calc?.title || "Calculator"}
+</h1>
+
             </div>
           </div>
         </div>
@@ -1405,7 +1404,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 mb-12 -py-1">
           
           {/* Inputs Section */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 md:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-[1.5 rem] sm:rounded-[2.5rem] p-6 sm:p-6 md:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
             <div className="text-slate-400 text-[10px] mb-4 font-bold uppercase tracking-widest text-left">
               <Info size={14} className="inline mr-2 -mt-1" /> Adjust sliders or type values
             </div>
@@ -1445,11 +1444,11 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               {/* Stock Average Calculator Custom UI */}
               {calc?.title === "Stock Average Calculator" ? (
                 <div className="space-y-4">
-                  <div className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4 mr-135">Share Blocks</div>
+                  <div className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 mr-135">Share Blocks</div>
                   {shares.map((share, index) => (
                     <div key={index} className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400 ml-3">Share {index + 1}</span>
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 ml-3">Share {index + 1}</span>
                         {shares.length > 2 && (
                           <button
                             onClick={() => setShares(shares.filter((_, i) => i !== index))}
@@ -1459,9 +1458,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 mb-1 mr-55 block">Buy Price</label>
+                      <div className="flex items-end gap-4">
+                        <div className="flex-1">
+                          <label className="text-xs font-bold text-slate-500 mb-1 block">Buy Price</label>
                           <input
                             type="number"
                             value={share.buyPrice}
@@ -1485,8 +1484,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                             placeholder="0"
                           />
                         </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 mb-1 mr-55 block">Quantity</label>
+                        <div className="flex-1">
+                          <label className="text-xs font-bold text-slate-500 mb-1 block">Quantity</label>
                           <input
                             type="number"
                             value={share.quantity}
@@ -1523,10 +1522,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               ) : (
                 <>
                   {/* SSY Rate Display */}
-                  {calc?.title === "SSY Calculator" && (
+{calc?.title === "SSY Calculator" && (
                     <div className="mb-4 mt-2">
                       <span className="text-sm text-black dark:text-white mr-122">
-                        Latest SSY Rate = 8.2%
+                        Latest SSY Rate = 8.5%
                       </span>
                     </div>
                   )}
@@ -1538,7 +1537,6 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
       {config.label1}
     </label>
     <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-      <span className="mr-1">{isINR ? '₹' : '$'}</span>
       <input
         type="number"
         value={v1}
@@ -1559,8 +1557,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             setV1(String(config.min1));
           }
         }}
-        className="bg-transparent w-16 outline-none border-none p-0 focus:ring-0"
+className="bg-transparent w-15 outline-none border-none p-0 -px-1 focus:ring-0 text-right"
       />
+      <span className="ml-1">{isINR ? '₹' : '$'}</span>
     </div>
   </div>
 
@@ -1621,7 +1620,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               setV2(String(config.def2 || config.min2));
             }
           }}
-          className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+          className="bg-transparent w-14  outline-none border-none p-0 -px-1 focus:ring-0 text-right"
         />
 
         {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
@@ -1680,8 +1679,8 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
                     <label className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 sm:mb-0">Time Period</label>
-                    <div className="flex items-center bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-lg font-black text-sm border border-gray-100 dark:border-gray-800/50">
-                      <span className="text-right">5 Years</span>
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 px-6 py-2 rounded-lg font-black text-sm border border-gray-100 dark:border-gray-800/50">
+                      <span className="text-right ">5 Years</span>
                     </div>
                   </div>
                 </div>
@@ -1709,7 +1708,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           <select
             value={v3}
             onChange={(e) => setV3(e.target.value)}
-            className="px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
+            className="px-2.5 py-2 mt-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded text-xs font-bold border border-purple-100 dark:border-purple-800/50"
           >
             <option value="1">Yearly</option>
             <option value="2">Half-Yearly</option>
@@ -1745,7 +1744,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     setV3(String(config.def3 || config.min3));
                   }
                 }}
-                className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+                className="bg-transparent w-12 outline-none border-none p-0 -px-1 focus:ring-0 text-right"
               />
               {calc?.title === "SWP Calculator" || calc?.title === "EPF Calculator" || calc?.title === "SCSS Calculator" ? (
                 <span className="ml-1 text-[12px] uppercase">%</span>
@@ -1817,14 +1816,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               setV4(String(config.def4 || config.min4));
             }
           }}
-          className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+          className="bg-transparent w-15 outline-none border-none p-0 focus:ring-0 text-right"
         />
         {calc?.title === "EPF Calculator" ? (
           <span className="ml-1 text-[12px] uppercase">%</span>
         ) : calc?.title === "HRA Calculator" || calc?.title === "Salary Calculator" ? (
           ""
         ) : (
-          <span className="ml-1 text-[12px] uppercase mt-[1px]">Yrs</span>
+          <span className="ml-1 text-[12px] uppercase mt-[2px]">Yrs</span>
         )}
       </div>
     </div>
@@ -1899,7 +1898,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   setV5(String(config.def5 || config.min5));
                 }
               }}
-              className="bg-transparent w-12 outline-none border-none p-0 focus:ring-0 text-right"
+              className="bg-transparent w-15 outline-none border-none p-0 focus:ring-0 text-right"
             />
           </>
         )}
@@ -1937,13 +1936,13 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${calc?.title === "ROI Calculator" ? (totalValue < 0 ? 'text-red-500' : 'text-green-500') : 'text-slate-400'} mb-1`}>
                 {calc?.title === "ROI Calculator" ? (totalValue < 0 ? "LOSS" : "PROFIT") : dynamicConfig.totalValueLabel}
               </p>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-1 break-all">
+              <h2 className="text-xl sm:text-4xl md:text-5xl font-black mb-1 break-all">
                 {calc?.title === "ROI Calculator" && totalValue < 0 ? formatCurrency(Math.abs(totalValue)) : formatCurrency(totalValue)}
               </h2>
              
 
               {/* Donut Chart */}
-              <div className="relative w-50 h-36 sm:w-50 sm:h-48 mb-4">
+              <div className="relative w-40 h-46 sm:w-40 sm:h-46 mb-4">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
                   <circle cx="96" cy="96" r="76" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="36" />
                   <circle
@@ -2001,14 +2000,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 {/* Conditional rendering based on calculator type */}
                 {calc?.title === "Stock Average Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Average Price</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(results.averagePrice)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Total Shares</span>
@@ -2018,21 +2017,21 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "NPS Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
                         <span className="text-xs font-bold text-slate-500">Interest Earned</span>
                       </div>
                       <span className="text-sm font-black">{formatCurrency(estReturns)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Total Investment</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(totalInvested)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Min. Annuity Investment</span>
@@ -2042,14 +2041,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "SCSS Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Total Interest</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(estReturns)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Quarterly Receivable Interest</span>
@@ -2059,14 +2058,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "ROI Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Final Amount</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(finalAmount)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Annualized ROI</span>
@@ -2076,21 +2075,21 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "SSY Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
                         <span className="text-xs font-bold text-slate-500">Total Investment</span>
                       </div>
                       <span className="text-sm font-black">{formatCurrency(totalInvested)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Total Interest</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(estReturns)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Maturity Year</span>
@@ -2100,14 +2099,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "Gratuity Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
                         <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>
                       </div>
                       <span className="text-sm font-black">{formatCurrency(totalInvested)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">{dynamicConfig.profitLabel}</span>
@@ -2117,14 +2116,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "EPF Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
                         <span className="text-xs font-bold text-slate-500">Monthly Salary</span>
                       </div>
                       <span className="text-sm font-black">{formatCurrency(results.monthlySalary)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Annual Increase</span>
@@ -2134,21 +2133,21 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : calc?.title === "Salary Calculator" ? (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Take Home Annual Salary</span>
                       </div>
                       <span className="text-sm font-black text-blue-600">{formatCurrency(results.takeHomeAnnual)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span className="text-xs font-bold text-slate-500">Total Monthly Deductions</span>
                       </div>
                       <span className="text-sm font-black text-green-600">{formatCurrency(results.totalMonthlyDeductions)}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4  bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">Total Annual Deductions</span>
@@ -2158,7 +2157,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <span className="text-xs font-bold text-slate-500">{dynamicConfig.profitLabel}</span>
@@ -2181,7 +2180,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                         )}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
+                    <div className="flex justify-between items-center p-4 pt-3 pb-3 bg-[#f8fafc] dark:bg-slate-800/50 rounded-2xl border border-slate-50 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-slate-300" />
                         <span className="text-xs font-bold text-slate-500">{dynamicConfig.investedLabel}</span>

@@ -7,8 +7,8 @@ const Hero: React.FC = () => {
 
   return (
     <section className="relative w-full py-7 px-4 sm:px-14 lg:px-14 md:py-10 overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
-      {/* Background decorative glow - Adjusted size for mobile */}
-      <div className="absolute top-0 right-0 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-blue-50/50 dark:bg-blue-900/10 rounded-full blur-3xl -z-10"></div>
+      {/* Background decorative glow - Gradient effect soft light colors */}
+      <div className="absolute top-0 right-0 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-gradient-to-br from-blue-200 via-purple-200 to-indigo-200 dark:from-indigo-800/60 dark:via-purple-800/50 dark:to-slate-800/40 rounded-full blur-3xl -z-10"></div>
       
       <div className="max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
         
@@ -33,13 +33,13 @@ const Hero: React.FC = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-2 w-full sm:w-auto">
-            <button onClick={() => document.getElementById('browse-section')?.scrollIntoView({ behavior: 'smooth' })} className="bg-slate-900 dark:bg-blue-600 text-white px-7 py-3.5 rounded-xl font-bold flex items-center justify-center group hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg cursor-pointer">
+            <button onClick={() => document.getElementById('browse-section')?.scrollIntoView({ behavior: 'smooth' })} className="bg-slate-900 dark:bg-blue-600 text-white px-7 py-3.5 rounded-xl font-semibold flex items-center justify-center group hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg cursor-pointer">
               Explore Tools
               <span className="ml-2 w-6 h-6 bg-white rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="w-4 h-4 text-slate-900" />
               </span>
             </button>
-            <button onClick={() => navigate('/Resources')} className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-7 py-3.5 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
+            <button onClick={() => navigate('/Resources')} className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-7 py-3.5 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
               Documentation
             </button>
           </div>

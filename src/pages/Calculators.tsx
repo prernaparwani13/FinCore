@@ -72,7 +72,7 @@ const Calculators = () => {
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
         />
-        <div className="bg-slate-200 dark:bg-slate-900/50 w-full pb-20 px-4 md:px-12">
+        <div className="bg-slate-100 dark:bg-slate-900/50 w-full pb-20 px-4 md:px-12">
           <div className="max-w-7xl">
             {filteredData.length === 0 ? (
               <div className="text-center py-8">

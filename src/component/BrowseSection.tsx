@@ -54,7 +54,7 @@ const BrowseSection: React.FC<BrowseSectionProps> = ({
         }
       `}
     </style>
-    <div id="browse-section" className="w-full bg-slate-200 dark:bg-slate-900/50 pt-12 sm:pt-16 pb-8 px-3 sm:px-6 md:px-12">
+    <div id="browse-section" className="w-full bg-slate-100 dark:bg-slate-900/50 pt-12 sm:pt-16 pb-8 px-3 sm:px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-8 mb-8 sm:mb-10">
           <div>
