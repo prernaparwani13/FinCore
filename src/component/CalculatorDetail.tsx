@@ -1640,11 +1640,11 @@ rounded-md -mt-[22px]">
                   setV2(String(config.def2 || config.min2));
                 }
               }}
-              className="bg-transparent w-14  outline-none border-none p-0 -px-1 focus:ring-0 text-right"
+              className="bg-transparent w-14  outline-none border-none p-0 px-1 focus:ring-0 text-right"
         />
 
         {!config.isV2Currency && calc?.title !== "HRA Calculator" && (
-          <span className="ml-1">
+          <span className="mr-2">
 {calc?.title === "SSY Calculator"
                     ? "YRS"
                     : calc?.title === "Gratuity Calculator"
@@ -1783,7 +1783,7 @@ const val = e.target.value;
       </div>
     </div>
 
-    {config.min3 !== config.max3 && calc?.title !== "PPF Calculator" && (
+    {config.min3 !== config.max3 && calc?.title !== "PPF Calculator" && calc?.title !== "SCSS Calculator" && (
       <>
         <input
           type="range"
