@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import AutoResizeInput from './AutoResizeInput';
+import { useLocation } from "react-router-dom";
+
 
 interface Calc {
   title: string;
@@ -1235,6 +1237,10 @@ const CALC_CONFIGS: Record<string, any> = {
 };
 
 const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) => {
+  const location = useLocation();   
+  const isSolutionPage = location.pathname.includes("/category");
+
+
   const { theme } = useTheme();
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
@@ -1392,25 +1398,21 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
             </button>
             <div className="flex flex-col items-start text-left">
-              <div className="inline-block 
-
-  bg-blue-50 dark:bg-slate-900 
-
-  text-blue-500 dark:text-blue-300
-
-  font-sans font-bold 
-
-  text-[13px] 
-
-  uppercase tracking-wider 
-
-  px-2 py-1  
-
-  rounded-md -mt-[10px]">
-
+              <div
+  className={`inline-block
+    bg-blue-50 dark:bg-slate-900
+    text-blue-500 dark:text-blue-300
+    font-sans font-bold
+    text-[13px]
+    uppercase tracking-wider
+    px-2 py-1
+    rounded-md
+    ${isSolutionPage ? "mt-4" : "-mt-[2px]"}
+  `}
+>
   {calc?.category || "INVESTMENT"}
-
 </div>
+
 
 
 
@@ -1469,7 +1471,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                 <div className="space-y-4">
                   <div className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 mr-135">Share Blocks</div>
                   {shares.map((share, index) => (
-                    <div key={index} className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div key={index} className="bg-slate-50 dark:bg-slate-800 p-3.5 rounded-lg border border-slate-200 dark:border-slate-700">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 ml-3">Share {index + 1}</span>
                         {shares.length > 2 && (
@@ -1537,7 +1539,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   ))}
                   <button
                     onClick={() => setShares([...shares, { buyPrice: '0', quantity: '0' }])}
-                    className="w-[180px] py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                    className="w-[180px] py-1 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
                   >
                     + Add Share Block
                   </button>
@@ -1547,7 +1549,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                   {/* SSY Rate Display */}
 {calc?.title === "SSY Calculator" && (
                     <div className="mb-4 mt-2">
-                      <span className="text-sm font-bold text-slate-600 dark:text-slate-400">
+                      <span className="text-sm font-bold text-slate-400 dark:text-slate-400 mr-[475px]">
                         Latest SSY Rate = 8.5%
                       </span>
                     </div>
@@ -1629,7 +1631,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           5 Years
         </div>
       ) : (
-                  <div className="inline-flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50 w-[100px]">
+                  <div className="inline-flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50 w-[105px]">
             <div className="flex items-center">
   {(config.isV2Currency || calc?.title === "HRA Calculator") && (
     <span className="mr-[3px]">
@@ -1756,13 +1758,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
             <option value="2">Half-Yearly</option>
           </select>
         )}
-        {calc?.title === "PPF Calculator" ? (
-          <div className="flex items-left justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-            <span className="text-right">7.1%</span>
-          </div>
+{calc?.title === "PPF Calculator" ? (
+          <span className="text-sm font-bold text-slate-600 dark:text-slate-400">7.1%</span>
         ) : calc?.title === "SCSS Calculator" ? (
-          <div className="flex items-left justify-start w-26 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg font-black text-sm border border-blue-100 dark:border-blue-800/50">
-            <span className="text-right">8.2%</span>
+          <div className="text-sm font-bold text-slate-600 dark:text-slate-400">
+            8.2%
+          </div>
+        ) : calc?.title === "Post Office MIS Calculator" ? (
+          <div className="text-sm font-bold text-slate-600 dark:text-slate-400">
+            5 Years
           </div>
         ) : (
           calc?.title !== "NSC Calculator" && calc?.title !== "SCSS Calculator" && (
@@ -1839,9 +1843,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           onChange={(e) => setV3(e.target.value)}
           // Update style to show 0% fill when empty
           style={getSliderStyle(v3 === "" || v3 === "-" ? 0 : percentage3, 2)}
-          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+          className="relative -top-2 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
         />
-        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+        <div className="flex justify-between text-[10px] font-bold text-slate-300 -mt-1 uppercase">
           <span>{config.min3}</span>
           <span>{config.max3}</span>
         </div>
@@ -1899,10 +1903,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
       onChange={(e) => setV4(e.target.value)}
       // Percentage resets to 0 if field is empty
       style={getSliderStyle(v4 === '' || v4 === '-' ? 0 : percentage4, 3)}
-      className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+      className="relative -top-2 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
     />
     
-    <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+    <div className="flex justify-between text-[10px] font-bold text-slate-300 -mt-1 uppercase">
       <span>
         {calc?.title === "HRA Calculator"
           ? config.min4.toLocaleString()
@@ -1974,9 +1978,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
           onChange={(e) => setV5(e.target.value)}
           // Background fill resets to 0% if field is empty
           style={getSliderStyle(v5 === '' || v5 === '-' ? 0 : percentage5, 4)}
-          className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
+          className="relative top-0 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
         />
-        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
+        <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-0 uppercase">
           <span>{config.min5.toLocaleString()}</span>
           <span>{config.max5.toLocaleString()}</span>
         </div>

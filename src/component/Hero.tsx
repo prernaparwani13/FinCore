@@ -56,7 +56,7 @@ const Hero: React.FC = () => {
 
         {/* Right Content - Visual Card */}
         <div className="relative flex justify-center w-full order-1 lg:order-2 mt-8 lg:mt-0">
-          <div className="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 md:p-12 shadow-2xl border border-white dark:border-slate-800 relative z-20 w-full max-w-[320px] sm:max-w-[440px] lg:-rotate-2 hover:rotate-0 transition-transform duration-500">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 md:p-12 shadow-xs border border-white dark:border-slate-800 relative z-20 w-full max-w-[320px] sm:max-w-[440px] lg:-rotate-2 hover:rotate-0 transition-transform duration-500">
             
             <div className="flex justify-between items-start mb-6 sm:mb-8">
               <div>

@@ -18,8 +18,7 @@ function AppRoutes() {
   
   useEffect(() => {
     localStorage.setItem('lastPath', location.pathname);
-  }, [location.pathname]);
-
+  }, [location.pathname])
 
   useEffect(() => {
     const lastPath = localStorage.getItem('lastPath');

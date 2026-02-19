@@ -134,9 +134,11 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
       
       {/* Input */}
      <div className="flex items-center">
-  <span className="text-sm font-black text-blue-600 dark:text-blue-400 mr-1 -ml-[6px]">
-    $
-  </span>
+  {prefix && (
+    <span className="text-sm font-black text-blue-600 dark:text-blue-400 mr-1 -ml-[6px]">
+      {prefix}
+    </span>
+  )}
 
   <input
     ref={inputRef}
@@ -157,7 +159,7 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
       
       {/* Suffix */}
       {suffix && (
-        <span className="text-blue-600 dark:text-blue-400 font-black text-sm ml-0.5 ">
+        <span className="text-blue-600 dark:text-blue-400 font-black text-sm -ml-[32px] ">
           {suffix}
         </span>
       )}
