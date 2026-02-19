@@ -134,7 +134,7 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
       
       {/* Input */}
      <div className="flex items-center">
-  <span className="text-sm font-black text-blue-600 dark:text-blue-400 mr-1">
+  <span className="text-sm font-black text-blue-600 dark:text-blue-400 mr-1 -ml-[6px]">
     $
   </span>
 
@@ -150,7 +150,7 @@ const AutoResizeInput: React.FC<AutoResizeInputProps> = ({
     style={{ width: inputWidth, minWidth: minWidth }}
     className="bg-transparent outline-none border-none p-0 focus:ring-0 
                text-left font-black text-sm 
-               text-blue-600 dark:text-blue-400"
+               text-blue-600 dark:text-blue-400 -ml-[2px]"
   />
 </div>
 

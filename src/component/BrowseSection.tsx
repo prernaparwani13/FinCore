@@ -83,7 +83,7 @@ const BrowseSection: React.FC<BrowseSectionProps> = ({
   className={`px-4 md:px-5 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${
     selectedCategory === cat
       ? 'bg-slate-900 dark:bg-blue-600 text-white shadow-lg'
-      : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-white border border-transparent hover:border-slate-300 hover:text-slate-800 hover:font-bold'
+      : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-white border border-transparent hover:border-slate-300 hover:text-slate-800 '
   }`}
 >
   {cat}

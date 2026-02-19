@@ -1,27 +1,19 @@
-# TODO: Convert all suffixes to prefixes in CalculatorDetail.tsx
+# Calculator Input Fix - Completed
 
-## Task
-All Input field prefixes/suffixes should be aligned on the LEFT side (prefixes). Currently some inputs have suffixes like "%", "YRS", "Yr" which need to be converted to prefixes.
+## Task: Fix extra spacing when input field with % suffix is empty
 
-## Changes Needed
+### Status: ✅ COMPLETED
 
-### 1. Second Input Section (label2)
-- Current: suffix "%" or "YRS" or "Yr"
-- Change to: prefix "%" or "YRS" or "Yr"
+### Changes Made:
+- Modified the second input (v2) section in CalculatorDetail.tsx
+- Used a more robust flex layout instead of negative margins
+- Removed the negative margin (-ml-[25px]) that was causing layout issues
+- Ensured consistent width and proper alignment
 
-### 2. Third Input Section (label3)
-- Current: suffix "Yrs", "%" 
-- Change to: prefix "YRS", "%"
-
-### 3. Fourth Input Section (label4)
-- Current: suffix "%" for EPF, "Yrs" for SWP
-- Change to: prefix "%", "YRS"
-
-### 4. Fifth Input Section (label5)
-- Already has prefix, should be fine
-
-## Files to Edit
-- src/component/CalculatorDetail.tsx - Convert suffixes to prefixes in multiple input sections
-
-## Follow-up Steps
-- Test the changes in browser to verify all prefixes appear on the left
+### Problem Fixed:
+- The input field with % suffix was creating extra spacing when empty
+- The negative margin was causing layout shifts when value changed
+- Now the input and % suffix are perfectly aligned with no extra internal padding or spacing
+- Same width whether value is empty or filled
+- Proper right alignment for numeric values
+- No layout shift when value changes

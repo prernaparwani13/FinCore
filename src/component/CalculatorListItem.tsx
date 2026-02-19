@@ -39,7 +39,7 @@ transition-colors">
         
         <div className="flex-grow min-w-0">
           {/* Title: Truncates on very small screens to prevent layout break */}
-          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white group-hover:text-blue-600 transition-colors text-left truncate sm:whitespace-normal">
+          <h3 className="text-base sm:text-lg font-semibold font-sans text-slate-800 dark:text-white group-hover:text-blue-600 transition-colors text-left truncate sm:whitespace-normal">
             {title}
           </h3>
           {/* Description: 1 line on mobile, 2 lines max on larger screens */}
@@ -51,9 +51,10 @@ transition-colors">
 
       {/* Right Section: Category & Arrow */}
       <div className="flex items-center justify-between md:justify-end md:gap-8 pointer-events-none border-t border-slate-50 md:border-t-0 pt-3 md:pt-0 dark:border-slate-800">
-        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/60">
-          {category}
-        </span>
+        <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.25em] text-blue-600">
+  {category}
+</span>
+
         
         {/* Visual Indicator: Arrow moves right on hover */}
      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 transition-colors duration-200">
