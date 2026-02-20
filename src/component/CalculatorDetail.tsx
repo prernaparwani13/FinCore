@@ -1258,6 +1258,15 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const [v3, setV3] = useState<string>(String(config.def3 || config.min3 || 0));
   const [v4, setV4] = useState<string>(String(config.def4 || config.min4 || 0));
   const [v5, setV5] = useState<string>(String(config.def5 || config.min5 || 0));
+
+  // Debounced values for chart updates (waits for user to stop moving slider)
+  const [debouncedV1, setDebouncedV1] = useState<string>(getInitialV1());
+  const [debouncedV2, setDebouncedV2] = useState<string>(String(config.def2 || config.min2));
+  const [debouncedV3, setDebouncedV3] = useState<string>(String(config.def3 || config.min3 || 0));
+  const [debouncedV4, setDebouncedV4] = useState<string>(String(config.def4 || config.min4 || 0));
+  const [debouncedV5, setDebouncedV5] = useState<string>(String(config.def5 || config.min5 || 0));
+  // Debounced ratio for animation - only updates after user stops moving slider
+  const [debouncedRatio, setDebouncedRatio] = useState<number>(0);
   const [isINR, setIsINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
@@ -1299,6 +1308,12 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     setV3(String(config.def3 || config.min3 || 0));
     setV4(String(config.def4 || config.min4 || 0));
     setV5(String(config.def5 || config.min5 || 0));
+    // Also set debounced values on mount
+    setDebouncedV1(String(config.def1 || config.min1));
+    setDebouncedV2(String(config.def2 || config.min2));
+    setDebouncedV3(String(config.def3 || config.min3 || 0));
+    setDebouncedV4(String(config.def4 || config.min4 || 0));
+    setDebouncedV5(String(config.def5 || config.min5 || 0));
   }, [config]);
 
   // Calculation
@@ -1327,33 +1342,48 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   if (calc?.title === "Stock Average Calculator") {
     results = config.calculate(shares);
   } else if (calc?.title === "Salary Calculator") {
-    results = config.calculate(val1, val2, val3, val4, val5);
+    results = config.calculate(debouncedV1, debouncedV2, debouncedV3, debouncedV4, debouncedV5);
   } else if (config.hasFourthSlider) {
-    results = config.calculate(val1, val2, val3, val4);
+    results = config.calculate(debouncedV1, debouncedV2, debouncedV3, debouncedV4);
   } else if (config.hasThirdSlider) {
     if (calc?.title === "RD Calculator") {
-      results = config.calculate(val1, val2, val3, timeUnit);
+      results = config.calculate(debouncedV1, debouncedV2, debouncedV3, timeUnit);
     } else if (calc?.title === "SCSS Calculator") {
-      results = config.calculate(val1, val2, val3, percentage1);
+      results = config.calculate(debouncedV1, debouncedV2, debouncedV3, percentage1);
     } else if (calc?.title === "NSC Calculator") {
-      results = config.calculate(val1, val2, val3);
+      results = config.calculate(debouncedV1, debouncedV2, debouncedV3);
     } else {
-      results = config.calculate(val1, val2, val3);
+      results = config.calculate(debouncedV1, debouncedV2, debouncedV3);
     }
   } else if (calc?.title === "GST Calculator") {
-    results = config.calculate(val1, val2, gstMode);
+    results = config.calculate(debouncedV1, debouncedV2, gstMode);
   } else {
-    results = config.calculate(val1, val2);
+    results = config.calculate(debouncedV1, debouncedV2);
   }
 
   const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0, averagePrice = 0, totalShares = 0 } = results;
 
-  // Trigger animation when ratio changes
+  // Debounce effect: Update debounced values after user stops moving slider (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedV1(v1);
+      setDebouncedV2(v2);
+      setDebouncedV3(v3);
+      setDebouncedV4(v4);
+      setDebouncedV5(v5);
+      // Update debounced ratio for animation after user stops moving slider
+      setDebouncedRatio(ratio);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [v1, v2, v3, v4, v5, ratio]);
+
+  // Trigger animation when debounced ratio changes (after user stops moving slider)
   useEffect(() => {
     setIsAnimating(true);
     const timer = setTimeout(() => setIsAnimating(false), 1000);
     return () => clearTimeout(timer);
-  }, [ratio]);
+  }, [debouncedRatio]);
 
   const formatCurrency = (amount: number) => {
     const convertedAmount = isINR ? amount * 83 : amount;
@@ -2011,7 +2041,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
-                    className="transition-all duration-1500 ease-in-out"
+                    className=""
                   />
                 </svg>
                 {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
@@ -2350,4 +2380,4 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
 };
 
-export default CalculatorDetail;
+export default React.memo(CalculatorDetail);

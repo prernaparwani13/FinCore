@@ -1,19 +1,17 @@
-# Calculator Input Fix - Completed
+# TODO - Donut Chart Debounce Implementation
 
-## Task: Fix extra spacing when input field with % suffix is empty
+## Task
+Debounce the Donut chart state updates to wait until the user stops moving the slider for a few milliseconds before updating the chart.
 
-### Status: ✅ COMPLETED
+## Plan
+- [x] Read and understand the current implementation in CalculatorDetail.tsx
+- [ ] Add debounced state variables for slider values
+- [ ] Create debounce effect using useEffect with setTimeout (300ms)
+- [ ] Update calculations to use debounced values instead of direct values
+- [ ] Test the implementation
 
-### Changes Made:
-- Modified the second input (v2) section in CalculatorDetail.tsx
-- Used a more robust flex layout instead of negative margins
-- Removed the negative margin (-ml-[25px]) that was causing layout issues
-- Ensured consistent width and proper alignment
-
-### Problem Fixed:
-- The input field with % suffix was creating extra spacing when empty
-- The negative margin was causing layout shifts when value changed
-- Now the input and % suffix are perfectly aligned with no extra internal padding or spacing
-- Same width whether value is empty or filled
-- Proper right alignment for numeric values
-- No layout shift when value changes
+## Implementation Details
+1. Add debounced state: debouncedV1, debouncedV2, debouncedV3, debouncedV4, debouncedV5
+2. Add useEffect that debounces value updates with 300ms delay
+3. Use debounced values for ratio calculations
+4. Keep direct values for slider display (for responsive UI)
