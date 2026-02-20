@@ -104,7 +104,7 @@ const Hero: React.FC = () => {
       <PieChart className="w-6 h-6 sm:w-10 sm:h-10 text-indigo-600" />
     </div>
     <div className='relative overflow-visible top left-13 transform -translate-x-1/2'>
-            <div className="absolute -bottom-10 left-4 sm:-bottom-10 sm:left-0 bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-2xl z-40 border border-slate-100 dark:border-slate-700 flex items-center gap-2 sm:gap-3">
+            <div className="absolute -bottom-10 left-4 sm:-bottom-10 sm:left-0 bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl z-40 border border-slate-100 dark:border-slate-700 flex items-center gap-2 sm:gap-3">
               <div className="bg-white dark:bg-blue-900/30 p-1 sm:p-1.5 rounded-lg">
                 <Globe className="w-5 h-5 sm:w-7 sm:h-7 text-blue-500" />
               </div>

@@ -1391,8 +1391,14 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     return `${symbol} ${convertedAmount.toLocaleString()}`;
   };
 
-  const circumference = 2 * Math.PI * 76;
-  const offset = circumference - (Math.abs(ratio) / 100) * circumference;
+  // Donut chart configuration
+  const radius = 76;
+  const circumference = 2 * Math.PI * radius;
+  // Cap the ratio at 100% to prevent chart overflow
+  const cappedRatio = Math.min(Math.abs(ratio), 100);
+  // strokeDashoffset: starts at 12 o'clock (due to -90deg rotation) and fills clockwise
+  // offset = circumference means empty, offset = 0 means full
+  const offset = circumference - (cappedRatio / 100) * circumference;
 
   const dynamicConfig = {
     ...config,
@@ -1849,7 +1855,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
    calc?.title !== "Salary Calculator" &&
    calc?.title !== "SWP Calculator" &&
    calc?.title !== "EPF Calculator" && (
-    <span className="ml-[4px] text-[12px] uppercase mt-[2px]">
+    <span className="ml-[4px] text-[13px] uppercase mt-[2px]">
       Yrs
     </span>
   )}
@@ -2041,7 +2047,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     strokeLinecap="round"
-                    className=""
+                    className="transition-all duration-500 ease-out"
+                    style={{
+                      transition: 'stroke-dashoffset 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
                   />
                 </svg>
                 {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
@@ -2329,7 +2338,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     </div>
 
     {/* Best Use Cases Box - 'flex-grow' makes this box expand to match Definitions */}
-    <div className="flex-grow bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 text-left lg:-mr-[105px]">
+    <div className="flex-grow bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border  border-slate-100 dark:border-slate-800 text-left lg:-mr-[105px] -mt-[4px]">
       <h3 className="font-bold mb-6 flex items-center gap-3">
         <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
           <Zap size={18} className="text-emerald-600" />
