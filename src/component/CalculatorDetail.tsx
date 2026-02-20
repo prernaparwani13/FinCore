@@ -1,5 +1,5 @@
 import Navbar from './Navbar';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ArrowLeft, Info, BookOpen,
   FileText, Zap, CircleCheck
@@ -1381,7 +1381,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   // Trigger animation when debounced ratio changes (after user stops moving slider)
   useEffect(() => {
     setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 1000);
+    const timer = setTimeout(() => setIsAnimating(false), 500); // Consistent 500ms duration
     return () => clearTimeout(timer);
   }, [debouncedRatio]);
 
