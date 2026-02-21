@@ -50,13 +50,13 @@ const CALC_CONFIGS: Record<string, any> = {
         const returnPercentage = investedAmount === 0 ? 0 : (estimatedReturns / investedAmount) * 100;
 
         return {
-            totalInvested: Math.round(investedAmount),
-            estReturns: Math.round(estimatedReturns),
-            totalValue: Math.round(totalValue),
-            years: Math.trunc(years),
-            returnPercentage: +returnPercentage.toFixed(2),
-            ratio: +returnPercentage.toFixed(2),
-        };
+    totalInvested: Math.round(investedAmount),
+    estReturns: Math.round(estimatedReturns),
+    totalValue: Math.round(totalValue),
+    years: Math.trunc(years),
+    returnPercentage: +returnPercentage.toFixed(2),
+    ratio: totalValue > 0 ? +((estimatedReturns / totalValue) * 100).toFixed(2) : 0, // ← FIX THIS
+};
     },
 
     totalValueLabel: "TOTAL VALUE",
@@ -1392,13 +1392,30 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   };
 
   // Donut chart configuration
-  const radius = 76;
-  const circumference = 2 * Math.PI * radius;
+  
   // Cap the ratio at 100% to prevent chart overflow
-  const cappedRatio = Math.min(Math.abs(ratio), 100);
-  // strokeDashoffset: starts at 12 o'clock (due to -90deg rotation) and fills clockwise
-  // offset = circumference means empty, offset = 0 means full
-  const offset = circumference - (cappedRatio / 100) * circumference;
+  // Live results for real-time chart animation
+let liveResults: any = {};
+if (calc?.title === "Stock Average Calculator") {
+  liveResults = config.calculate(shares);
+} else if (calc?.title === "Salary Calculator") {
+  liveResults = config.calculate(v1, v2, v3, v4, v5);
+} else if (config.hasFourthSlider) {
+  liveResults = config.calculate(v1, v2, v3, v4);
+} else if (config.hasThirdSlider) {
+  liveResults = config.calculate(v1, v2, v3);
+} else if (calc?.title === "GST Calculator") {
+  liveResults = config.calculate(v1, v2, gstMode);
+} else {
+  liveResults = config.calculate(v1, v2);
+}
+const liveRatio = liveResults?.ratio ?? 0;
+
+// Donut chart configuration
+const radius = 76;
+const circumference = 2 * Math.PI * radius;
+const cappedRatio = Math.min(Math.abs(liveRatio), 100);
+const offset = circumference - (cappedRatio / 100) * circumference;
 
   const dynamicConfig = {
     ...config,
@@ -2038,30 +2055,57 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
               </h2>
              
 
-              {/* Donut Chart */}
-              <div className="relative w-40 h-46 sm:w-40 sm:h-46 mb-4">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
-                  <circle cx="96" cy="96" r="76" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="36" />
-                  <circle
-                    cx="96" cy="96" r="76" fill="transparent" stroke="#3b82f6" strokeWidth="36"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
-                    className="transition-all duration-500 ease-out"
-                    style={{
-                      transition: 'stroke-dashoffset 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  />
-                </svg>
-                {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-{dynamicConfig.gainLabel || "RETURN" }
-                    </p>
-                    <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
-                  </div>
-                )}
-              </div>
+              {/* Groww-style Donut Chart */}
+<div className="flex flex-col items-center mb-2">
+  {/* Legend */}
+  <div className="flex items-center gap-4 mb-3 text-xs font-semibold text-slate-500">
+    <div className="flex items-center gap-1.5">
+      <div className="w-3 h-3 rounded-sm bg-slate-200 dark:bg-slate-600" />
+      <span>{dynamicConfig.investedLabel || 'Invested amount'}</span>
+    </div>
+    <div className="flex items-center gap-1.5">
+      <div className="w-3 h-3 rounded-sm bg-blue-500" />
+      <span>{dynamicConfig.profitLabel || 'Est. returns'}</span>
+    </div>
+  </div>
+
+  {/* Chart */}
+  <div className="relative w-44 h-44">
+    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
+      {/* Background track (invested amount - light gray) */}
+      <circle
+        cx="96" cy="96" r="76"
+        fill="transparent"
+        stroke="#e2e8f0"
+        className="dark:stroke-slate-700"
+        strokeWidth="32"
+      />
+      {/* Foreground arc (est. returns - blue) */}
+      <circle
+        cx="96" cy="96" r="76"
+        fill="transparent"
+        stroke="#5367ff"
+        strokeWidth="32"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="butt"
+        style={{
+          transition: 'stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      />
+    </svg>
+
+    {/* Center content for loan calculators */}
+    {(calc?.title === "Loan Amortization" || calc?.title === "Auto Loan" || calc?.title === "Mortgage Payment") && (
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+          {dynamicConfig.gainLabel || "RETURN"}
+        </p>
+        <p className="text-lg sm:text-xl font-black">{Math.abs(returnPercentage).toFixed(1)}%</p>
+      </div>
+    )}
+  </div>
+</div>
 
               {/* Currency Toggle - Hidden for EPF Calculator */}
               {/* INR/USD Toggle button commented out as per requirement
