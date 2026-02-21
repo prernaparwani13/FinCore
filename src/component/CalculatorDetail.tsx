@@ -160,7 +160,7 @@ const CALC_CONFIGS: Record<string, any> = {
         totalInvested: Math.round(loanAmount),
         estReturns: Math.round(interest),
         finalAmount: Math.round(totalPayments),
-        ratio: +((interest / loanAmount) * 100).toFixed(2)
+        ratio: totalPayments > 0 ? +((interest / totalPayments) * 100).toFixed(2) : 0
       };
     },
     totalValueLabel: "MONTHLY PAYMENT",
@@ -201,7 +201,8 @@ const CALC_CONFIGS: Record<string, any> = {
     returnPercentage: +(interest / P * 100).toFixed(2),
     totalInvested: P, // Principal Amount
     estReturns: Math.round(totalValue), // Total Amount (Future Value)
-    ratio: +(interest / P * 100).toFixed(2)
+    ratio: totalValue > 0 ? +((interest / totalValue) * 100).toFixed(2) : 0
+
   };
 },
 
@@ -257,10 +258,8 @@ const CALC_CONFIGS: Record<string, any> = {
       totalInvested > 0
         ? +((interestEarned / totalInvested) * 100).toFixed(2)
         : 0,
-    ratio:
-      totalInvested > 0
-        ? +((interestEarned / totalInvested) * 100).toFixed(2)
-        : 0
+    ratio: futureValue > 0 ? +((interestEarned / futureValue) * 100).toFixed(2) : 0
+
   };
 },
     totalValueLabel: "ESTIMATED NEST EGG",
@@ -300,7 +299,9 @@ const CALC_CONFIGS: Record<string, any> = {
         totalInvested: Math.round(invested),
         estReturns: netProfit,
         finalAmount: returned,
-        ratio: roi
+        ratio: returned > 0 ? +((netProfit / returned) * 100).toFixed(2) : 0
+
+
       };
     },
     totalValueLabel: "PROFIT/LOSS",
@@ -344,7 +345,9 @@ const CALC_CONFIGS: Record<string, any> = {
     estReturns: +gstAmount.toFixed(2),
     returnPercentage: rate,
     years: 1,
-    ratio: rate
+    ratio: mode === 'exclusive'
+  ? +(gstAmount / totalPrice * 100).toFixed(2)
+  : +(gstAmount / totalPrice * 100).toFixed(2)
   };
 },
 
@@ -381,7 +384,8 @@ const CALC_CONFIGS: Record<string, any> = {
         returnPercentage: (interest / principal) * 100,
         totalInvested: principal,
         estReturns: Math.round(totalAmount),
-        ratio: (interest / principal) * 100
+       ratio: totalAmount > 0 ? +((interest / totalAmount) * 100).toFixed(2) : 0
+
       };
     },
     totalValueLabel: "TOTAL INTEREST",
@@ -473,7 +477,8 @@ const CALC_CONFIGS: Record<string, any> = {
         returnPercentage: +((estReturns / P) * 100).toFixed(2),
         totalInvested: P,
         estReturns: Math.round(estReturns),
-        ratio: +((estReturns / P) * 100).toFixed(2)
+        ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2) : 0
+
       };
 },
 
@@ -517,7 +522,8 @@ const CALC_CONFIGS: Record<string, any> = {
         returnPercentage: +((estReturns / P) * 100).toFixed(2),
         totalInvested: P,
         estReturns: Math.round(estReturns),
-        ratio: +((estReturns / P) * 100).toFixed(2)
+        ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2) : 0
+
       };
     },
     totalValueLabel: "TOTAL VALUE",
@@ -560,7 +566,8 @@ const CALC_CONFIGS: Record<string, any> = {
         returnPercentage: inflationRate,
         totalInvested: P,
         estReturns: Math.round(futureCost),
-        ratio: +((costIncrease / P) * 100).toFixed(2)
+        ratio: Math.round(futureCost) > 0 ? +((costIncrease / futureCost) * 100).toFixed(2) : 0
+
       };
     },
     totalValueLabel: "COST INCREASE",
@@ -621,8 +628,8 @@ const CALC_CONFIGS: Record<string, any> = {
     estReturns: interestEarned,
     maturityAmount,
     minAnnuityInvestment,
-    ratio:
-      totalInvested > 0 ? (interestEarned / totalInvested) * 100 : 0
+    ratio: maturityAmount > 0 ? +((interestEarned / maturityAmount) * 100).toFixed(2) : 0
+
   };
 },
 
@@ -692,7 +699,8 @@ const CALC_CONFIGS: Record<string, any> = {
       totalInvested: Math.round(totalInvested),
       estReturns: Math.round(interest),
       returnPercentage: totalInvested > 0 ? (interest / totalInvested) * 100 : 0,
-      ratio: totalInvested > 0 ? (interest / totalInvested) * 100 : 0
+      ratio: Math.round(maturity) > 0 ? +((interest / maturity) * 100).toFixed(2) : 0
+
     };
   },
     totalValueLabel: "MATURITY VALUE",
@@ -763,7 +771,8 @@ const CALC_CONFIGS: Record<string, any> = {
     maturityValue,
     maturityYear,
     returnPercentage: totalInvested > 0 ? +((totalInterest / totalInvested) * 100).toFixed(2) : 0,
-    ratio: totalInvested > 0 ? +((totalInterest / totalInvested)).toFixed(2) : 0,
+ratio: maturityValue > 0 ? +((totalInterest / maturityValue) * 100).toFixed(2) : 0
+
   };
 },
 
@@ -833,8 +842,9 @@ const CALC_CONFIGS: Record<string, any> = {
     estReturns: Math.round(estReturns),
     returnPercentage: ((estReturns / totalInvestment) * 100).toFixed(2),
     years: timePeriodYears,
-    ratio: (actualWithdrawals / totalInvestment).toFixed(2),
-  };
+ratio: (actualWithdrawals + Math.max(finalValue, 0)) > 0
+  ? +((actualWithdrawals / (actualWithdrawals + Math.max(finalValue, 0))) * 100).toFixed(2)
+  : 100,  };
 },
     totalValueLabel: "TOTAL WITHDRAWAL",
     investedLabel: "Final Value",
@@ -876,7 +886,7 @@ const CALC_CONFIGS: Record<string, any> = {
         estReturns: Math.round(estReturns),
         maturityValue: Math.round(maturityValue),
         returnPercentage: +((estReturns / totalInvested) * 100).toFixed(2),
-        ratio: (estReturns / totalInvested) * 100
+ratio: Math.round(maturityValue) > 0 ? +((estReturns / maturityValue) * 100).toFixed(2) : 0
       };
     },
     totalValueLabel: "MATURITY VALUE",
@@ -920,7 +930,7 @@ const CALC_CONFIGS: Record<string, any> = {
         returnPercentage: +((estReturns / P) * 100).toFixed(2),
         totalInvested: P,
         estReturns: Math.round(estReturns),
-        ratio: +((estReturns / P) * 100).toFixed(2)
+ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2) : 0
       };
     },
     totalValueLabel: "TOTAL VALUE",
@@ -1016,7 +1026,8 @@ const CALC_CONFIGS: Record<string, any> = {
         estReturns: Math.round(estReturns),
         returnPercentage: rate,
         years: years,
-        ratio: (totalIncome / P) * 100
+        ratio: (P + totalIncome) > 0 ? +((totalIncome / (P + totalIncome)) * 100).toFixed(2) : 0
+
       };
     },
     totalValueLabel: "MONTHLY Income",
@@ -1096,7 +1107,8 @@ const CALC_CONFIGS: Record<string, any> = {
     estReturns: Math.round(estReturns),
     returnPercentage: +((estReturns / P) * 100).toFixed(2),
     years: t,
-    ratio: +((estReturns / P) * 100).toFixed(2)
+    ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2) : 0
+
   };
 },
 
