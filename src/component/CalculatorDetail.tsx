@@ -322,28 +322,32 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Cost of Investment", desc: "The initial amount invested." }
     ]
   },
-  "GST Calculator": {
+"GST Calculator": {
     label1: "Price", min1: 5000, max1: 500000, step1: 100, def1: 5000,
     label2: "GST Rate", min2: 5, max2: 30, step2: 1, def2: 5,
     hasThirdSlider: false,
     isV2Currency: false,
    calculate: (price: number, rate: number, mode: 'exclusive' | 'inclusive' = 'exclusive') => {
+  // Force convert to numbers to prevent string concatenation
+  const p = Number(price);
+  const r = Number(rate);
+  
   let gstAmount, totalPrice, originalPrice;
   if (mode === 'exclusive') {
-    gstAmount = price * (rate / 100);
-    totalPrice = price + gstAmount;
-    originalPrice = price;
+    gstAmount = p * (r / 100);
+    totalPrice = p + gstAmount;
+    originalPrice = p;
   } else {
-    totalPrice = price;
-    originalPrice = price / (1 + rate / 100);
+    totalPrice = p;
+    originalPrice = p / (1 + r / 100);
     gstAmount = totalPrice - originalPrice;
   }
 
   return {
     totalValue: mode === 'exclusive' ? totalPrice : +originalPrice.toFixed(2),
-    totalInvested: price,
+    totalInvested: p,
     estReturns: +gstAmount.toFixed(2),
-    returnPercentage: rate,
+    returnPercentage: r,
     years: 1,
     ratio: mode === 'exclusive'
   ? +(gstAmount / totalPrice * 100).toFixed(2)
@@ -369,31 +373,57 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Total Price", desc: "The original price plus the GST amount." }
     ]
   },
-  "Simple Interest": {
-    label1: "Principal Amount", min1: 100, max1: 1000000, step1: 100, def1: 100,
-    label2: "Rate of Interest (%)", min2: 1, max2: 20, step2: 0.1, def2: 1,
-    label3: "Time Period (Years)", min3: 1, max3: 30, step3: 1, def3: 1,
+"Simple Interest": {
+    // Initial positions (Defaults)
+    label1: "Principal Amount", 
+    min1: 100, 
+    max1: 1000000, 
+    step1: 100, 
+    def1: 10000, // Initial position at 10,000
+    
+    label2: "Rate of Interest (%)", 
+    min2: 1, 
+    max2: 20, 
+    step2: 0.1, 
+    def2: 6, // Initial position at 6%
+    
+    label3: "Time Period (Years)", 
+    min3: 1, 
+    max3: 30, 
+    step3: 1, 
+    def3: 5, // Initial position at 5 years
+    
     hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (principal: number, rate: number, time: number) => {
-      const interest = principal * rate * time / 100;
-      const totalAmount = principal + interest;
-      return {
-        totalValue: Math.round(interest),
-        years: time,
-        returnPercentage: (interest / principal) * 100,
-        totalInvested: principal,
-        estReturns: Math.round(totalAmount),
-       ratio: totalAmount > 0 ? +((interest / totalAmount) * 100).toFixed(2) : 0
 
+    calculate: (p, r, t) => {
+      // Force conversion to Number to prevent string concatenation
+      const principal = Number(p);
+      const rate = Number(r);
+      const time = Number(t);
+
+      // Simple Interest Formula: (P * R * T) / 100
+      const interest = (principal * rate * time) / 100;
+      
+      // Calculate Total Amount (Mathematical addition)
+      const totalAmount = principal + interest;
+
+      return {
+        totalValue: Math.round(totalAmount),
+        years: time,
+        returnPercentage: principal > 0 ? (interest / principal) * 100 : 0,
+        totalInvested: principal,
+        estReturns: Math.round(interest),
+        ratio: totalAmount > 0 ? Number(((interest / totalAmount) * 100).toFixed(2)) : 0
       };
     },
-    totalValueLabel: "TOTAL INTEREST",
+
+    totalValueLabel: "TOTAL AMOUNT",
     gainLabel: "INTEREST %",
-    investedLabel: "Total Amount",
-    profitLabel: "Principal Amount",
+    investedLabel: "Principal Amount",
+    profitLabel: "Total Interest",
     formulaText: "This simple interest calculator uses the basic interest formula:",
-    formulaLatex: "SI = P x R x T / 100, Total Amount = P + SI",
+    formulaLatex: "SI = \\frac{P \\times R \\times T}{100}, \\text{ Total Amount} = P + SI",
     formulaVars: "SI = Simple Interest, P = Principal Amount, R = Rate of Interest (%), T = Time Period (Years)",
     useCases: [
       "Calculating interest on loans or savings without compounding.",
@@ -406,7 +436,7 @@ const CALC_CONFIGS: Record<string, any> = {
       { title: "Time Period", desc: "The duration over which the interest is calculated, in years." },
       { title: "Simple Interest", desc: "The interest calculated only on the principal amount." }
     ]
-  },
+},
   "Auto Loan": {
     type: 'loan',
     label1: "Loan Amount", min1: 100000, max1: 10000000, step1: 500, def1: 100000,
@@ -732,17 +762,35 @@ const CALC_CONFIGS: Record<string, any> = {
     hasThirdSlider: true,
     isV2Currency: false,
   calculate: (yearly:number, age:number, startYear:number) => {
-  // 1. Current official SSY interest rate (8.2%)
+  // 1. Force conversion to Numbers to prevent string concatenation
+  const P = Number(yearly);
+  const girlAge = Number(age);
+  const start = Number(startYear);
+  
+  // 2. Current official SSY interest rate (8.2%)
   const rate = 0.082;
   
-  // 2. SSY Rules: 
+  // 3. SSY Rules: 
   // Contribution Period: 15 years from start
   // Maturity Period: 21 years from start
   const contributionPeriod = 15;
   const maturityPeriod = 21;
 
   // Validation: SSY is only for girls aged 10 or below
-  if (age > 10) return { error: "Girl must be 10 years or younger." };
+  if (girlAge > 10) return { error: "Girl must be 10 years or younger." };
+
+  // Handle invalid inputs
+  if (!P || P <= 0 || isNaN(P)) {
+    return {
+      totalValue: 0,
+      totalInvested: 0,
+      estReturns: 0,
+      maturityValue: 0,
+      maturityYear: start,
+      returnPercentage: 0,
+      ratio: 0
+    };
+  }
 
   let balance = 0;
   let totalInvested = 0;
@@ -750,8 +798,8 @@ const CALC_CONFIGS: Record<string, any> = {
   for (let year = 1; year <= maturityPeriod; year++) {
     // Add deposit at the START of the year (only for first 15 years)
     if (year <= contributionPeriod) {
-      balance += yearly;
-      totalInvested += yearly;
+      balance += P;
+      totalInvested += P;
     }
 
     // Apply interest at the END of the year (Annual Compounding)
@@ -762,7 +810,7 @@ const CALC_CONFIGS: Record<string, any> = {
 
   const maturityValue = Math.round(balance);
   const totalInterest = maturityValue - totalInvested;
-  const maturityYear = startYear + maturityPeriod;
+  const maturityYear = start + maturityPeriod;
 
   return {
     totalValue: maturityValue,
@@ -771,7 +819,7 @@ const CALC_CONFIGS: Record<string, any> = {
     maturityValue,
     maturityYear,
     returnPercentage: totalInvested > 0 ? +((totalInterest / totalInvested) * 100).toFixed(2) : 0,
-ratio: maturityValue > 0 ? +((totalInterest / maturityValue) * 100).toFixed(2) : 0
+ratio: maturityValue > 0 ? +((totalInterest / maturityValue) * 100).toFixed(2) : 0,
 
   };
 },
@@ -799,7 +847,7 @@ ratio: maturityValue > 0 ? +((totalInterest / maturityValue) * 100).toFixed(2) :
   
     ]
   },
-  "SWP Calculator": {
+"SWP Calculator": {
     label1: "Total Investment", min1: 10000, max1: 10000000, step1: 1000, def1: 10000,
     label2: "Withdraw per month", min2: 500, max2: 10000000, step2: 500, def2: 500,
     label3: "Expected return rate", min3: 0, max3: 30, step3: 0.5, def3: 0,
@@ -808,44 +856,63 @@ ratio: maturityValue > 0 ? +((totalInterest / maturityValue) * 100).toFixed(2) :
     hasFourthSlider: true,
     isV2Currency: true,
     isV4Currency: false,
-  calculate: (
-  totalInvestment: number,
-  withdrawPerMonth: number,
-  expectedReturn: number,
-  timePeriodYears: number
-) => {
-  const monthlyRate = expectedReturn / 100 / 12;
-  const totalMonths = timePeriodYears * 12;
+    initialRatio: 0, // Start with empty donut at initial position
+    calculate: (
+      totalInvestment: number,
+      withdrawPerMonth: number,
+      expectedReturn: number,
+      timePeriodYears: number
+    ) => {
+      // Force convert all inputs to numbers to prevent string concatenation issues
+      const invest = Number(totalInvestment);
+      const withdraw = Number(withdrawPerMonth);
+      const rate = Number(expectedReturn);
+      const years = Number(timePeriodYears);
 
-  let currentBalance = totalInvestment;
-  let actualWithdrawals = 0;
+      // Handle edge cases - prevent invalid calculations
+      if (!invest || invest <= 0 || !withdraw || withdraw <= 0) {
+        return {
+          totalValue: 0,
+          totalInvested: invest || 0,
+          finalValue: 0,
+          estReturns: 0,
+          returnPercentage: 0,
+          years: years,
+          ratio: 100
+        };
+      }
 
-  for (let i = 0; i < totalMonths; i++) {
-    // 1. Withdrawal happens at the START of the month
-    currentBalance -= withdrawPerMonth;
-    actualWithdrawals += withdrawPerMonth;
+      const monthlyRate = rate / 100 / 12;
+      const totalMonths = years * 12;
 
-    // 2. Interest is earned on the REMAINING balance
-    currentBalance = currentBalance * (1 + monthlyRate);
+      let currentBalance = invest;
+      let actualWithdrawals = 0;
 
-    // 3. Allow negative values - don't cap at zero anymore
-    // This allows the final value to display negative when withdrawals exceed the investment + returns
-  }
+      for (let i = 0; i < totalMonths; i++) {
+  currentBalance -= withdraw;           // Always withdraw full amount
+  actualWithdrawals += withdraw;
+  currentBalance = currentBalance * (1 + monthlyRate);  // Interest on remaining balance
+}
+      const finalValue = Math.round(currentBalance);
+const estReturns = actualWithdrawals + finalValue - invest;
+const returnPct = invest > 0 ? ((estReturns / invest) * 100) : 0;
 
-  const finalValue = Math.round(currentBalance);
-  const estReturns = actualWithdrawals + finalValue - totalInvestment;
+// Blue = how much of original investment has been consumed/withdrawn
+// Gray = how much still remains as final value
+const withdrawnRatio = invest > 0
+  ? Math.min(((invest - Math.max(finalValue, 0)) / invest) * 100, 100)
+  : 100;
 
-  return {
-    totalValue: Math.round(actualWithdrawals),
-    totalInvested: totalInvestment,
-    finalValue: finalValue,
-    estReturns: Math.round(estReturns),
-    returnPercentage: ((estReturns / totalInvestment) * 100).toFixed(2),
-    years: timePeriodYears,
-ratio: (actualWithdrawals + Math.max(finalValue, 0)) > 0
-  ? +((actualWithdrawals / (actualWithdrawals + Math.max(finalValue, 0))) * 100).toFixed(2)
-  : 100,  };
-},
+return {
+  totalValue: Math.round(actualWithdrawals),
+  totalInvested: invest,
+  finalValue: finalValue,
+  estReturns: Math.round(estReturns),
+  returnPercentage: returnPct,
+  years: years,
+  ratio: withdrawnRatio,   
+};
+    },
     totalValueLabel: "TOTAL WITHDRAWAL",
     investedLabel: "Final Value",
     profitLabel: "Total Investment",
@@ -1089,13 +1156,15 @@ ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2
     label3:"Compounding Frequency", options3: ["Yearly", "Half-yearly"], def3: "Half-yearly",
     hasThirdSlider: true,
     isV2Currency: false,
-    calculate: (amountInvested: number, rate: number, compoundingFrequency: number) => {
+    calculate: (amountInvested: number, rate: number, compoundingFrequency: number | string) => {
   const P = Number(amountInvested);
   const r = Number(rate) / 100;
   const t = 5; // NSC fixed tenure (5 years)
 
   // compoundingFrequency: 1 = Yearly, 2 = Half-yearly
-  const n = compoundingFrequency === 2 ? 2 : 1; // Number of compounding periods per year
+  // Convert to number to handle both string ("1", "2") and number (1, 2) inputs
+  const freq = Number(compoundingFrequency);
+  const n = freq === 2 ? 2 : 1; // Number of compounding periods per year
   
   // Compound interest formula: A = P × (1 + r/n)^(n × t)
   const totalValue = P * Math.pow(1 + r / n, n * t);
@@ -1257,9 +1326,9 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const calculatorTitle = calc?.title || "";
   const config = CALC_CONFIGS[calculatorTitle] || CALC_CONFIGS["SIP Calculator"];
 
-  // For SCSS Calculator, use min1 (initial position) instead of def1
+  // For SCSS Calculator and Simple Interest, use min1 (initial position) instead of def1
   const getInitialV1 = () => {
-    if (calculatorTitle === "SCSS Calculator") {
+    if (calculatorTitle === "SCSS Calculator" || calculatorTitle === "Simple Interest") {
       return String(config.min1);
     }
     return String(config.def1 || config.min1);
@@ -1313,20 +1382,32 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
 
 
 
-  // Set defaults on mount
+  // Set defaults on mount - For Simple Interest, use min values
   useEffect(() => {
-    setV1(String(config.def1 || config.min1));
-    setV2(String(config.def2 || config.min2));
-    setV3(String(config.def3 || config.min3 || 0));
+    if (calculatorTitle === "Simple Interest") {
+      setV1(String(config.min1));
+      setV2(String(config.min2));
+      setV3(String(config.min3));
+    } else {
+      setV1(String(config.def1 || config.min1));
+      setV2(String(config.def2 || config.min2));
+      setV3(String(config.def3 || config.min3 || 0));
+    }
     setV4(String(config.def4 || config.min4 || 0));
     setV5(String(config.def5 || config.min5 || 0));
     // Also set debounced values on mount
-    setDebouncedV1(String(config.def1 || config.min1));
-    setDebouncedV2(String(config.def2 || config.min2));
-    setDebouncedV3(String(config.def3 || config.min3 || 0));
+    if (calculatorTitle === "Simple Interest") {
+      setDebouncedV1(String(config.min1));
+      setDebouncedV2(String(config.min2));
+      setDebouncedV3(String(config.min3));
+    } else {
+      setDebouncedV1(String(config.def1 || config.min1));
+      setDebouncedV2(String(config.def2 || config.min2));
+      setDebouncedV3(String(config.def3 || config.min3 || 0));
+    }
     setDebouncedV4(String(config.def4 || config.min4 || 0));
     setDebouncedV5(String(config.def5 || config.min5 || 0));
-  }, [config]);
+  }, [config, calculatorTitle]);
 
   // Calculation
   const val1 = Number(v1) || (config.def1 || config.min1);
@@ -1398,10 +1479,10 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   }, [debouncedRatio]);
 
   const formatCurrency = (amount: number) => {
-    const convertedAmount = isINR ? amount * 83 : amount;
-    const symbol = isINR ? '₹' : '$';
-    return `${symbol} ${convertedAmount.toLocaleString()}`;
-  };
+  const convertedAmount = isINR ? amount * 83 : amount;
+  const symbol = isINR ? '₹' : '$';
+  return `${symbol} ${convertedAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+};
 
   // Donut chart configuration
   
@@ -1470,9 +1551,9 @@ const offset = circumference - (cappedRatio / 100) * circumference;
     font-sans font-bold
     text-[13px]
     uppercase tracking-wider
-    px-2 py-1
+    px-1 py-1
     rounded-md
-    ${isSolutionPage ? "mt-4" : "-mt-[2px]"}
+    ${isSolutionPage ? "mt-4" : "-mt-[21px]"}
   `}
 >
   {calc?.category || "INVESTMENT"}
@@ -2059,16 +2140,16 @@ const offset = circumference - (cappedRatio / 100) * circumference;
           {/* Results Sidebar */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-6 border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center shadow-sm ">
-              <p className={`text-[10px] font-sans  font-extrabold uppercase  tracking-[0.2em] text-black ${calc?.title === "ROI Calculator" ? (totalValue < 0 ? 'text-red-500' : 'text-green-500') : 'text-slate-400'} mb-1`}>
-                {calc?.title === "ROI Calculator" ? (totalValue < 0 ? "LOSS" : "PROFIT") : dynamicConfig.totalValueLabel}
+              <p className={`text-[10px] font-sans  font-extrabold uppercase  tracking-[0.2em] text-black ${calc?.title === "ROI Calculator" ? (totalValue < 0 ? 'text-red-500' : 'text-green-500') : calc?.title === "SWP Calculator" && results.finalValue < 0 ? 'text-red-500' : 'text-slate-400'} mb-1`}>
+                {calc?.title === "ROI Calculator" ? (totalValue < 0 ? "LOSS" : "PROFIT") : calc?.title === "SWP Calculator" ? (results.finalValue < 0 ? "LOSS" : dynamicConfig.totalValueLabel) : dynamicConfig.totalValueLabel}
               </p>
               <h2 className="text-xl sm:text-4xl md:text-5xl font-black mb-1 break-all">
-                {calc?.title === "ROI Calculator" && totalValue < 0 ? formatCurrency(Math.abs(totalValue)) : formatCurrency(totalValue)}
+                {calc?.title === "ROI Calculator" && totalValue < 0 ? formatCurrency(Math.abs(totalValue)) : calc?.title === "SWP Calculator" && results.finalValue < 0 ? formatCurrency(Math.abs(results.finalValue)) : formatCurrency(totalValue)}
               </h2>
              
 
               {/* Groww-style Donut Chart */}
-<div className="flex flex-col items-center mb-2">
+<div className="flex flex-col items-center mb-0 mt-[12px]">
   {/* Legend */}
   <div className="flex items-center gap-4 mb-3 text-xs font-semibold text-slate-500">
     <div className="flex items-center gap-1.5">
@@ -2083,7 +2164,8 @@ const offset = circumference - (cappedRatio / 100) * circumference;
 
   {/* Chart */}
   <div className="relative w-44 h-44">
-    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
+    <svg className="w-full h-full" style={{ transform: 'rotate(90deg) scaleX(-1)' }} viewBox="0 0 192 192">
+
       {/* Background track (invested amount - light gray) */}
       <circle
         cx="96" cy="96" r="76"
