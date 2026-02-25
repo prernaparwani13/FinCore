@@ -1,5 +1,5 @@
 import Navbar from './Navbar';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   ArrowLeft, Info, BookOpen,
   FileText, Zap, CircleCheck
@@ -396,7 +396,7 @@ const CALC_CONFIGS: Record<string, any> = {
     hasThirdSlider: true,
     isV2Currency: false,
 
-    calculate: (p, r, t) => {
+    calculate: (p:number, r:number, t:number) => {
       // Force conversion to Number to prevent string concatenation
       const principal = Number(p);
       const rate = Number(r);
@@ -1083,7 +1083,7 @@ ratio: Math.round(totalValue) > 0 ? +((estReturns / totalValue) * 100).toFixed(2
       const r = Number(rate) / 100;
       const years = Number(lockInPeriod);
       const monthlyIncome = (P * r) / 12;
-      const totalInvested = P;
+      // const totalInvested = P;
       const totalIncome = monthlyIncome * years * 12;
       const estReturns = totalIncome - P;
 
@@ -1347,32 +1347,32 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const [debouncedV4, setDebouncedV4] = useState<string>(String(config.def4 || config.min4 || 0));
   const [debouncedV5, setDebouncedV5] = useState<string>(String(config.def5 || config.min5 || 0));
   // Debounced ratio for animation - only updates after user stops moving slider
-  const [debouncedRatio, setDebouncedRatio] = useState<number>(0);
-  const [isINR, setIsINR] = useState(false);
+  //const [setDebouncedRatio] = useState<number>(0);
+  const [isINR] = useState(false);
   const [timeUnit, setTimeUnit] = useState(config.timeUnit || 'Years');
   const [gstMode, setGstMode] = useState<'exclusive' | 'inclusive'>('exclusive');
 
-  const [frequency, setFrequency] = useState(2); // default half-yearly
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  // const [frequency, setFrequency] = useState(2); // default half-yearly
+  // const [isAnimating, setIsAnimating] = useState(false);
+  // const [hasInteracted, setHasInteracted] = useState(false);
 
   // Income Tax Calculator specific state
-  const [assessmentYear, setAssessmentYear] = useState('2025-2026');
-  const [ageCategory, setAgeCategory] = useState('Below 60');
-  const [deductions, setDeductions] = useState({
-    deduction80C: 0,
-    deduction80CCD1B: 0,
-    deduction80D: 0,
-    deduction80G: 0,
-    deduction80E: 0,
-    deduction80TTA: 0
-  });
-  const [hra, setHra] = useState({
-    basicSalary: 0,
-    da: 0,
-    hraReceived: 0,
-    rentPaid: 0
-  });
+  // const [assessmentYear, setAssessmentYear] = useState('2025-2026');
+  // const [ageCategory, setAgeCategory] = useState('Below 60');
+  // const [deductions, setDeductions] = useState({
+  //   deduction80C: 0,
+  //   deduction80CCD1B: 0,
+  //   deduction80D: 0,
+  //   deduction80G: 0,
+  //   deduction80E: 0,
+  //   deduction80TTA: 0
+  // });
+  // const [hra, setHra] = useState({
+  //   basicSalary: 0,
+  //   da: 0,
+  //   hraReceived: 0,
+  //   rentPaid: 0
+  // });
 
   // Stock Average Calculator specific state
   const [shares, setShares] = useState<{buyPrice: string, quantity: string}[]>([
@@ -1424,7 +1424,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
   const percentage5 = config.min5 !== config.max5 ? ((val5 - config.min5) / (config.max5 - config.min5)) * 100 : 0;
 
   // Dynamic slider styles based on theme and slider index
-  const getSliderStyle = (percentage: number, sliderIndex: number = 0) => {
+  const getSliderStyle = (percentage: number) => {
     const fillColor = '#3b82f6'; // blue for all sliders
     return {
       background: `linear-gradient(to right, ${fillColor} 0%, ${fillColor} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} ${percentage}%, ${theme === 'dark' ? '#1e293b' : '#f1f5f9'} 100%)`
@@ -1454,7 +1454,7 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
     results = config.calculate(debouncedV1, debouncedV2);
   }
 
-  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0, maturityValue = 0, averagePrice = 0, totalShares = 0 } = results;
+  const { totalInvested = 0, estReturns = 0, totalValue = 0, years = 0, returnPercentage = 0, ratio = 0, finalAmount = 0,  } = results;
 
   // Debounce effect: Update debounced values after user stops moving slider (300ms delay)
   useEffect(() => {
@@ -1465,18 +1465,18 @@ const CalculatorDetail: React.FC<Props> = ({ calc, onBack, showNavbar = true }) 
       setDebouncedV4(v4);
       setDebouncedV5(v5);
       // Update debounced ratio for animation after user stops moving slider
-      setDebouncedRatio(ratio);
+      // setDebouncedRatio(ratio);
     }, 300);
 
     return () => clearTimeout(timer);
   }, [v1, v2, v3, v4, v5, ratio]);
 
   // Trigger animation when debounced ratio changes (after user stops moving slider)
-  useEffect(() => {
-    setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 500); // Consistent 500ms duration
-    return () => clearTimeout(timer);
-  }, [debouncedRatio]);
+  // useEffect(() => {
+  //   setIsAnimating(true);
+  //   const timer = setTimeout(() => setIsAnimating(false), 500); // Consistent 500ms duration
+  //   return () => clearTimeout(timer);
+  // }, [debouncedRatio]);
 
   const formatCurrency = (amount: number) => {
   const convertedAmount = isINR ? amount * 83 : amount;
@@ -1722,7 +1722,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
           else setV1(val);
         }
       }
-      setHasInteracted(true);
+      // setHasInteracted(true);
     }}
     onBlur={() => {
       const numVal = Number(v1);
@@ -1749,7 +1749,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
         // KEY FIX: Use config.min1 if v1 is empty so the slider resets
         value={v1 === '' ? config.min1 : v1} 
         onChange={(e) => setV1(e.target.value)}
-        style={getSliderStyle(v1 === '' ? 0 : percentage1, 0)}
+        style={getSliderStyle(v1 === '' ? 0 : percentage1)}
         className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
       />
       <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
@@ -1843,7 +1843,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
         value={v2 === '' || v2 === '-' ? config.min2 : v2}
         onChange={(e) => setV2(e.target.value)}
         // Ensure the filled track percentage also resets to 0 when empty
-        style={getSliderStyle(v2 === '' || v2 === '-' ? 0 : percentage2, 1)}
+        style={getSliderStyle(v2 === '' || v2 === '-' ? 0 : percentage2)}
         className="w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
       />
       <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-1 uppercase">
@@ -1988,7 +1988,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
           value={v3 === "" || v3 === "-" ? config.min3 : v3}
           onChange={(e) => setV3(e.target.value)}
           // Update style to show 0% fill when empty
-          style={getSliderStyle(v3 === "" || v3 === "-" ? 0 : percentage3, 2)}
+          style={getSliderStyle(v3 === "" || v3 === "-" ? 0 : percentage3)}
           className="relative -top-2 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
         />
         <div className="flex justify-between text-[10px] font-bold text-slate-300 -mt-1 uppercase">
@@ -2048,7 +2048,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
       value={v4 === '' || v4 === '-' ? config.min4 : v4}
       onChange={(e) => setV4(e.target.value)}
       // Percentage resets to 0 if field is empty
-      style={getSliderStyle(v4 === '' || v4 === '-' ? 0 : percentage4, 3)}
+      style={getSliderStyle(v4 === '' || v4 === '-' ? 0 : percentage4)}
       className="relative -top-2 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
     />
     
@@ -2123,7 +2123,7 @@ const offset = circumference - (cappedRatio / 100) * circumference;
           value={v5 === '' || v5 === '-' ? config.min5 : v5}
           onChange={(e) => setV5(e.target.value)}
           // Background fill resets to 0% if field is empty
-          style={getSliderStyle(v5 === '' || v5 === '-' ? 0 : percentage5, 4)}
+          style={getSliderStyle(v5 === '' || v5 === '-' ? 0 : percentage5)}
           className="relative top-0 w-full h-2 sm:h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-600"
         />
         <div className="flex justify-between text-[10px] font-bold text-slate-300 mt-0 uppercase">

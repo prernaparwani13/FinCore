@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check , Minus , Plus , Briefcase } from 'lucide-react';
+import { Check , Minus  , Briefcase } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useState } from 'react';
